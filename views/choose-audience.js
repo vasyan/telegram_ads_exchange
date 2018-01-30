@@ -31,26 +31,21 @@ function init () {
   })
 
   bot.onText(PATTERN_INPUT, (msg, match) => {
-    // console.log('Matched ', match);
-
     ViewChoosePrice.render(msg)
   })
 }
 
-// function removeListeners () {
-//   bot.removeTextListener(PATTERN_INPUT)
+// exports.init = init
+// exports.render = render
+// exports.actions = {
+//   RENDER: ACTION_RENDER
 // }
-
-exports.init = init
-exports.render = render
-exports.actions = {
-  RENDER: ACTION_RENDER
+module.exports = {
+  init,
+  render,
+  actions: {
+    RENDER: ACTION_RENDER
+  }
+  // PATTERN_INPUT
+  // removeListeners
 }
-// module.exports = {
-//   init,
-//   render,
-//   foo: 'bar',
-//   actions: function () {}
-//   // PATTERN_INPUT
-//   // removeListeners
-// }
