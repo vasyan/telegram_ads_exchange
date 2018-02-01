@@ -25,8 +25,8 @@ const userSchema = new Schema({
     ref: 'language',
   }],
   interfaceLanguage: {
-    type: Schema.ObjectId,
-    ref: 'language',
+    type: Number,
+    default: 0,
   },
   orders: [{
     type: Schema.ObjectId,

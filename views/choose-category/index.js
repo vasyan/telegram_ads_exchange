@@ -16,7 +16,7 @@ const NEXT = VIEW_NAME + '_next'
 // const SELL = '__greeting_sell'
 
 
-function getSelectedIcon (value, selected) {
+function getSelectedIcon (value, selected = []) {
   if (selected.indexOf(value) > -1) {
     return ' ✅'
   }
@@ -27,7 +27,7 @@ function getSelectedIcon (value, selected) {
 function renderInlineKeyboard ({
   list, selected, offset, locale
 }) {
-  console.log('selected', selected);
+  console.log('selected', selected)
   const keys = list.slice(offset, 6).map((item) => {
     return {
       text: i18[locale].titles[item.title] + getSelectedIcon(item._id, selected),
@@ -42,7 +42,7 @@ function renderInlineKeyboard ({
       keyboard.push([])
     }
 
-    keyboard[keyboard.length - 1].push(keys[i]);
+    keyboard[keyboard.length - 1].push(keys[i])
   }
 
   return keyboard
@@ -52,7 +52,7 @@ function render (payload, params = { selected: [] }) {
   User.findUser({ id: payload.from.id }).then((user) => {
     const locale = User.getLocale(user)
 
-    console.log('user', user);
+    console.log('user', user)
 
     if (params.isBuying && !user.orderDraftBuy) {
       Order.addOrder(new OrderModel()).then(({ order }) => {
@@ -103,7 +103,7 @@ function render (payload, params = { selected: [] }) {
       ).catch((err) => console.error('catched on editMessageText', err))
     })
   }).catch((err) => {
-    console.log('choose category render error', err);
+    console.log('choose category render error', err)
   })
 }
 
@@ -121,12 +121,12 @@ function init () {
 
   bot.on('callback_query', function (payload) {
     if (payload.data.indexOf(`${VIEW_NAME}:select:`) === 0) {
-      console.log('Handler', payload.data);
+      console.log('Handler', payload.data)
       const selectedCategoryId = payload.data.match(/:select:(\w+)/)[1]
 
       User.findUser({ id: payload.from.id }).then((user) => {
         Order.findOrder({ _id: user.orderDraftBuy }).then((order) => {
-          console.log('order.categories', order.categories);
+          console.log('order.categories', order.categories)
           if (order.categories.indexOf(selectedCategoryId) === -1) {
             order.categories.push(selectedCategoryId)
           } else {
@@ -136,7 +136,7 @@ function init () {
           order.save().then(() => {
             render(payload, { offset, isBuying: true })
           }).catch(err => {
-            console.log('error on order save ', err);
+            console.log('error on order save ', err)
           })
         })
       })
@@ -144,23 +144,12 @@ function init () {
 
     switch (payload.data) {
       case ViewGreeting.actions.BUY:
-        // User.findUser({ userId: payload.from.id }).then((user) => {
-        //   if (!user.orderDraftBuy) {
-        //
-        //     Order.addOrder(new orderSchema()).then(({ order }) => {
-        //       console.log('order' , order);
-        //
-        //       user.orderDraftBuy = order.id
-        //       user.save().then((err, user) => {
-        //         render(payload, { selected, offset, isBuying: true, user })
-        //       })
-        //     })
-        //   }
-        //
-          render(payload, { selected, offset, isBuying: true })
-        // })
-        // render(payload, { selected, offset, isBuying: true })
-        break;
+        render(payload, { selected, offset, isBuying: true })
+        break
+
+      case ViewGreeting.actions.SELL:
+        render(payload, { selected, offset, isSelling: true })
+        break
 
       case PREV_PAGE:
         offset = offset - 6
@@ -169,12 +158,12 @@ function init () {
           offset = 0
         }
         render(payload, { selected, offset })
-        break;
+        break
 
       case NEXT_PAGE:
         offset = offset + 6
         render(payload, { selected, offset })
-        break;
+        break
     }
   })
 }

@@ -80,18 +80,18 @@ function addUser(user) {
         new User(user)
           .save()
           .then(savedUser => resolve({ user: savedUser, new: true }))
-          .catch(reject);
+          .catch(reject)
       })
   );
 }
 
 
 function getLocale(user) {
-  if (!user || !user.interfaceLanguage || String(user.interfaceLanguage._id) === englishObjectId || String(user.interfaceLanguage) === englishObjectId) {
-    return 'ENGLISH';
+  if (!user || user.interfaceLanguage === 0) {
+    return 'RUSSIAN'
   }
 
-  return 'RUSSIAN';
+  return 'ENGLISH'
 }
 
 

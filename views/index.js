@@ -10,6 +10,6 @@ module.exports = {
     ViewChooseAudience.init()
     ViewChooseCategory.init()
     ViewChoosePrice.init()
-    ViewTesting.init()
+    // ViewTesting.init()
   }
 }

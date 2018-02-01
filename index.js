@@ -1,8 +1,9 @@
+const Promise = require('bluebird')
 const bot = require('./engine')
 const mongoose = require('mongoose')
 const Views = require('./views')
+const Menus = require('./menus')
 const SchemaUser = require('./schema/user')
-const Promise = require('bluebird')
 
 global.Promise = Promise
 // const store = require('./store')
@@ -142,7 +143,10 @@ bot.on('message', ({ chat }) => {
 
     bot.sendMessage(chatId, '', {
       reply_markup: {
-        keyboard: [['/whoami']],
+        keyboard: [
+          ['/whoami'],
+          []
+        ],
         resize_keyboard: true
       }
     }).catch(function (err) {

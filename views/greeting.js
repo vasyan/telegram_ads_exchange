@@ -1,5 +1,6 @@
 const bot = require('../engine')
 const User = require('../dataAdapter/user')
+const mainMenu = require('../menus/main')
 
 const BUY = '__greeting_buy'
 const SELL = '__greeting_sell'
@@ -24,33 +25,40 @@ const i18 = {
   RUSSIAN
 }
 
-function init () {
-  bot.onText(/\/start/, function (msg) {
-    User.addUser(msg.from).then(({ user, isNew }) => {
-      const dictionary = i18[User.getLocale(user)]
+const SHOW_COMMANDS = [
+  mainMenu.commands.ENGLISH.start,
+  mainMenu.commands.RUSSIAN.start
+]
 
-      bot.sendMessage(
-        msg.chat.id,
-        `${dictionary.welcome}, ${user.username}! ` +
-        dictionary.greetingBrif,
-        {
-          reply_markup: {
-            inline_keyboard: [
-              [{
-                text: dictionary.inlineMenu.buy,
-                callback_data: BUY
-              }],
-              [{
-                text: dictionary.inlineMenu.sell,
-                callback_data: SELL
-              }]
-            ],
+function init () {
+  bot.on('message', function (msg) {
+    if (SHOW_COMMANDS.indexOf(msg.text) !== -1) {
+      User.addUser(msg.from).then(({ user }) => {
+        const dictionary = i18[User.getLocale(user)]
+
+        bot.sendMessage(
+          msg.chat.id,
+          `${dictionary.welcome}, ${user.username}! ` +
+          dictionary.greetingBrif,
+          {
+            reply_markup: {
+              inline_keyboard: [
+                [{
+                  text: dictionary.inlineMenu.buy,
+                  callback_data: BUY
+                }],
+                [{
+                  text: dictionary.inlineMenu.sell,
+                  callback_data: SELL
+                }]
+              ],
+            }
           }
-        }
-      ).catch(function (err) {
-        console.log('Greeting view sending error', err);
+        ).catch(function (err) {
+          console.log('Greeting view sending error', err);
+        })
       })
-    })
+    }
   })
 }
 
