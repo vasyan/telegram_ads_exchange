@@ -5,7 +5,7 @@ const PATTERN_INPUT = /(\d+)\s?-\s?(\d+)\sRUB/
 const VIEW_NAME = '__choose_price'
 
 function render (payload, params) {
-  console.log('payload', payload);
+  // console.log('payload', payload);
   // const additionParams = {
   //   message_id: payload.message.message_id,
   //   chat_id: payload.from.id,

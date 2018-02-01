@@ -4,8 +4,6 @@ const ViewChooseCategory = require('./choose-category')
 const ViewChoosePrice = require('./choose-price')
 const ViewTesting = require('./testing')
 
-console.log('ViewChooseAudience', ViewChooseAudience);
-
 module.exports = {
   init: function () {
     ViewGreeting.init()

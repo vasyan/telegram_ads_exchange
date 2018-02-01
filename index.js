@@ -2,10 +2,15 @@ const bot = require('./engine')
 const mongoose = require('mongoose')
 const Views = require('./views')
 const SchemaUser = require('./schema/user')
+const Promise = require('bluebird')
+
+global.Promise = Promise
+// const store = require('./store')
 // const handleBuy = require('./handlers/buy')
 // const handleSell = require('./handlers/sell')
 // const CallbackQuery = require('./callbacks/query')
 
+mongoose.Promise = global.Promise;
 mongoose.connect('mongodb://localhost/my_database');
 
 var db = mongoose.connection;
@@ -61,6 +66,15 @@ bot.onText(/\/echo (.+)/, (msg, match) => {
 bot.onText(/\/register/, (msg, match) => {
 })
 
+// bot.onText(/\/store/, (msg, match) => {
+//   store.store.dispatch({
+//     type: 'SHOW_MY_ORDERS',
+//     payload: {
+//       foo: 'bar'
+//     }
+//   })
+// })
+
 bot.onText(/\/whoami/, (msg, match) => {
   // console.log('msg', msg.chat)
   const chatId = msg.chat.id;
@@ -93,9 +107,9 @@ bot.onText(/\/whoami/, (msg, match) => {
   })
 })
 
-bot.onText(/\Купить/, handleBuy)
-bot.onText(/\Продать/, handleSell)
-
+// bot.onText(/\Купить/, handleBuy)
+// bot.onText(/\Продать/, handleSell)
+//
 
 // bot.onText(/\/start/, (msg, match) => {
 //   const { id } = msg.chat

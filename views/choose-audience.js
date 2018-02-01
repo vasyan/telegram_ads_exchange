@@ -35,17 +35,10 @@ function init () {
   })
 }
 
-// exports.init = init
-// exports.render = render
-// exports.actions = {
-//   RENDER: ACTION_RENDER
-// }
 module.exports = {
   init,
   render,
   actions: {
     RENDER: ACTION_RENDER
   }
-  // PATTERN_INPUT
-  // removeListeners
 }
