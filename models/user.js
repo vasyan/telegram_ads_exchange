@@ -34,12 +34,17 @@ const userSchema = new Schema({
     required: true,
     default: [],
   }],
-  order_drafts: [{
+  // orderDrafts: [{
+  //   type: Schema.ObjectId,
+  //   ref: 'order',
+  //   requred: true,
+  //   default: [],
+  // }],
+  orderDraftBuy: {
     type: Schema.ObjectId,
     ref: 'order',
     requred: true,
-    default: [],
-  }],
+  },
   specialSymbol: String,
 }, { timestamps: true })
 

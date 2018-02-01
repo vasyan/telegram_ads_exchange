@@ -18,6 +18,7 @@ function findUser(query) {
   return new Promise(resolve => {
     User.findOne(query)
       .populate([
+        'orderDraftBuy'
         // 'categories',
         // 'jobs',
         // 'job_draft',
