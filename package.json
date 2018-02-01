@@ -8,9 +8,16 @@
   },
   "author": "",
   "license": "ISC",
+  "engines": {
+    "node": ">9.0.0"
+  },
   "dependencies": {
     "mongoose": "^5.0.1",
     "node-telegram-bot-api": "^0.30.0",
     "ramda": "^0.25.0"
+  },
+  "devDependencies": {
+    "eslint": "^4.16.0",
+    "eslint-plugin-node": "^5.2.1"
   }
 }
