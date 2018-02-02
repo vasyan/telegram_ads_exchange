@@ -30,9 +30,7 @@ const i18 = {
 }
 
 function render (msg) {
-  User.findUser({ id: msg.from.id }).then((user) => {
-    const locale = User.getLocale(user)
-
+  User.getLocale(msg).then((locale) => {
     bot.sendMessage(msg.chat.id, i18[locale].welcome, {
       reply_markup: {
         keyboard: [

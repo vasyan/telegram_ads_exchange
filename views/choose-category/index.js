@@ -74,7 +74,7 @@ function renderControls ({ offset, list }) {
 }
 
 function render (payload, { init, offset }) {
-  User._getLocale(payload).then((locale) => {
+  User.getLocale(payload).then((locale) => {
     User.createOrderDraft(payload, { flush: init }).then((user) => {
       Category.getAllCategories().then(list => {
         const categoriesKeys = renderInlineKeyboard({ list, selected: (user.orderDraft || []).categories, locale, offset })

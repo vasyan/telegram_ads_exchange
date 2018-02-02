@@ -88,7 +88,7 @@ function addUser(user) {
   );
 }
 
-function getLocale(user) {
+function getLocaleFromUser(user) {
   if (!user || user.interfaceLanguage === 0) {
     return 'RUSSIAN'
   }
@@ -96,7 +96,7 @@ function getLocale(user) {
   return 'ENGLISH'
 }
 
-function _getLocale(msg) {
+function getLocale(msg) {
   return new Promise((resolve) => {
     findUser({ id: msg.from.id }).then((user) => {
       if (!user || user.interfaceLanguage === 0) {
@@ -141,7 +141,7 @@ module.exports = {
   findUser,
   findUserById,
   addUser,
-  getLocale,
+  getLocaleFromUser,
   _getLocale,
   createOrderDraft
 }

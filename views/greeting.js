@@ -34,7 +34,7 @@ function init () {
   bot.on('message', function (msg) {
     if (SHOW_COMMANDS.indexOf(msg.text) !== -1) {
       User.addUser(msg.from).then(({ user }) => {
-        const dictionary = i18[User.getLocale(user)]
+        const dictionary = i18[User.extractLocaleFromUser(user)]
 
         bot.sendMessage(
           msg.chat.id,
