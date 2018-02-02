@@ -111,7 +111,9 @@ function getLocale(msg) {
 }
 
 function createOrderDraft (msg, { flush }) {
+  console.log('++++++ createOrderDraft');
   return new Promise((resolve) => {
+    console.log('createOrderDraft', msg);
     ModelUser.findOne({ id: msg.from.id }).then((user) => {
       if (user && user.orderDraft) {
         if (flush) {
@@ -142,6 +144,6 @@ module.exports = {
   findUserById,
   addUser,
   getLocaleFromUser,
-  _getLocale,
+  getLocale,
   createOrderDraft
 }

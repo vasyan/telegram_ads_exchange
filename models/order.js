@@ -22,8 +22,10 @@ const orderSchema = new Schema({
     ref: 'language',
   },
   description: String,
-  priceLow: String,
   priceHigh: String,
+  priceLow: String,
+  audienceHigh: Number,
+  audienceLow: Number,
   reviewByClient: {
     type: Schema.ObjectId,
     ref: 'review',

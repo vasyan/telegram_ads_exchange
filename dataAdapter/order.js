@@ -53,10 +53,20 @@ function flushOrder(id) {
   })
 }
 
+function setAudience(id, range = [0, Infinity]) {
+  return new Promise((resolve) => {
+    Order.findByIdAndUpdate(id, {
+      audienceLow: range[0],
+      audienceHigh: range[1]
+    }, resolve)
+  })
+}
+
 
 module.exports = {
   addOrder,
   findOrder,
   getAllOrders,
-  flushOrder
+  flushOrder,
+  setAudience
 }
