@@ -4,8 +4,8 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const userSchema = new Schema({
   id: Number,
-  first_name: String,
-  last_name: String,
+  firstName: String,
+  lastName: String,
   username: String,
   bio: String,
   input_state: String,
@@ -40,15 +40,15 @@ const userSchema = new Schema({
   //   requred: true,
   //   default: [],
   // }],
-  orderDraftBuy: {
+  orderDraft: {
     type: Schema.ObjectId,
     ref: 'order',
-    requred: true,
+    // requred: true,
   },
   specialSymbol: String,
 }, { timestamps: true })
 
-const englishObjectId = '581d0b8db33e47e7008726bd'
-const russianObjectId = '581d0b8db33e47e7008726be'
+// const englishObjectId = '581d0b8db33e47e7008726bd'
+// const russianObjectId = '581d0b8db33e47e7008726be'
 
 module.exports = mongoose.model('user', userSchema);

@@ -1,13 +1,10 @@
-const _ = require('lodash')
 const bot = require('../../engine')
 const Category = require('../../dataAdapter/category')
 const User = require('../../dataAdapter/user')
 const Order = require('../../dataAdapter/order')
-const OrderModel = require('../../models/order')
 const i18 = require('./i18')
 const ViewGreeting = require('../greeting')
 const ViewChooseAudience = require('../choose-audience')
-const ViewChoosePrice = require('../choose-price')
 
 const VIEW_NAME = '__choose_category'
 const NEXT_PAGE = VIEW_NAME + '_next_page'
@@ -27,7 +24,6 @@ function getSelectedIcon (value, selected = []) {
 function renderInlineKeyboard ({
   list, selected, offset, locale
 }) {
-  console.log('selected', selected)
   const keys = list.slice(offset, 6).map((item) => {
     return {
       text: i18[locale].titles[item.title] + getSelectedIcon(item._id, selected),
@@ -49,61 +45,43 @@ function renderInlineKeyboard ({
 }
 
 function render (payload, params = { selected: [] }) {
-  User.findUser({ id: payload.from.id }).then((user) => {
-    const locale = User.getLocale(user)
+  User._getLocale(payload).then((locale) => {
+    User.createOrderDraft(payload, { flush: params.init }).then((user) => {
+      Category.getAllCategories().then(list => {
+        const categoriesKeys = renderInlineKeyboard({ list, selected: (user.orderDraft || []).categories, locale, offset: 0 })
+        const additionParams = {
+          message_id: payload.message.message_id,
+          chat_id: payload.from.id
+        }
 
-    console.log('user', user)
-
-    if (params.isBuying && !user.orderDraftBuy) {
-      Order.addOrder(new OrderModel()).then(({ order }) => {
-        user.orderDraftBuy = order.id
-        user.save().then((err) => {
-          if (err) {
-            console.error(err)
-          }
-        })
-        order.save().then((err) => {
-          if (err) {
-            console.error(err)
-          }
-        })
-      })
-    }
-
-    Category.getAllCategories().then(list => {
-      const categoriesKeys = renderInlineKeyboard({ list, selected: (user.orderDraftBuy || []).categories, locale, offset: 0 })
-      const additionParams = {
-        message_id: payload.message.message_id,
-        chat_id: payload.from.id
-      }
-
-      bot.editMessageReplyMarkup({
-        inline_keyboard: [
-          ...categoriesKeys,
-          [
-            {
-              text: '⬅️',
-              callback_data: PREV_PAGE
-            },
-            {
-              text: '➡️',
-              callback_data: NEXT_PAGE
-            }
+        bot.editMessageReplyMarkup({
+          inline_keyboard: [
+            ...categoriesKeys,
+            [
+              {
+                text: '⬅️',
+                callback_data: PREV_PAGE
+              },
+              {
+                text: '➡️',
+                callback_data: NEXT_PAGE
+              }
+            ],
+            [{
+              text: i18[locale].next,
+              callback_data: ViewChooseAudience.actions.RENDER
+            }],
           ],
-          [{
-            text: i18[locale].next,
-            callback_data: ViewChooseAudience.actions.RENDER
-          }],
-        ],
-      }, additionParams).catch((err) => console.error('catched on editMessageReplyMarkup'))
+        }, additionParams).catch((err) => console.error('catched on editMessageReplyMarkup'))
 
-      bot.editMessageText(
-        `Выберите подходящие категории канала`,
-        additionParams
-      ).catch((err) => console.error('catched on editMessageText', err))
+        bot.editMessageText(
+          `Выберите подходящие категории канала`,
+          additionParams
+        ).catch((err) => void 0)
+      })
+    }).catch((err) => {
+      console.log('choose category render error', err)
     })
-  }).catch((err) => {
-    console.log('choose category render error', err)
   })
 }
 
@@ -111,22 +89,12 @@ function init () {
   let selected = []
   let offset = 0
 
-  function selectedToggle (value) {
-    if (selected.indexOf(value) === -1) {
-      selected.push(value)
-    } else {
-      selected = selected.filter((item) => item !== value)
-    }
-  }
-
   bot.on('callback_query', function (payload) {
     if (payload.data.indexOf(`${VIEW_NAME}:select:`) === 0) {
-      console.log('Handler', payload.data)
       const selectedCategoryId = payload.data.match(/:select:(\w+)/)[1]
 
       User.findUser({ id: payload.from.id }).then((user) => {
-        Order.findOrder({ _id: user.orderDraftBuy }).then((order) => {
-          console.log('order.categories', order.categories)
+        Order.findOrder({ _id: user.orderDraft }).then((order) => {
           if (order.categories.indexOf(selectedCategoryId) === -1) {
             order.categories.push(selectedCategoryId)
           } else {
@@ -144,11 +112,11 @@ function init () {
 
     switch (payload.data) {
       case ViewGreeting.actions.BUY:
-        render(payload, { selected, offset, isBuying: true })
+        render(payload, { selected, offset, isBuying: true, init: true })
         break
 
       case ViewGreeting.actions.SELL:
-        render(payload, { selected, offset, isSelling: true })
+        render(payload, { selected, offset, isSelling: true, init: true })
         break
 
       case PREV_PAGE:

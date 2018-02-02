@@ -5,7 +5,7 @@ const RUSSIAN = {
     humor: 'юмор',
     crypto: 'крипта',
     education: 'образование',
-    busines: 'бизнесс',
+    business: 'бизнесс',
     news: 'новости',
     music: 'музыка',
     it: 'технологии',

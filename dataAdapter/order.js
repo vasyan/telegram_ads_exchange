@@ -1,3 +1,4 @@
+const _ = require('lodash')
 const Order = require('../models/order')
 
 function getAllOrders(query = {}) {
@@ -44,9 +45,18 @@ function addOrder(order) {
   )
 }
 
+function flushOrder(id) {
+  return new Promise((resolve) => {
+    const defaultOrder = new Order().toJSON()
+    console.log('-------', id, defaultOrder);
+    Order.findByIdAndUpdate(id, _.omit(defaultOrder, ['_id']), resolve)
+  })
+}
+
 
 module.exports = {
   addOrder,
   findOrder,
-  getAllOrders
+  getAllOrders,
+  flushOrder
 }

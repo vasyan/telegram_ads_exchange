@@ -141,20 +141,20 @@ bot.on('message', ({ chat }) => {
   if (!inited) {
     inited = true
 
-    bot.sendMessage(chatId, '', {
-      reply_markup: {
-        keyboard: [
-          ['/whoami'],
-          []
-        ],
-        resize_keyboard: true
-      }
-    }).catch(function (err) {
-      console.log('Err', err);
-    })
+    // bot.sendMessage(chatId, '', {
+    //   reply_markup: {
+    //     keyboard: [
+    //       ['/whoami'],
+    //       []
+    //     ],
+    //     resize_keyboard: true
+    //   }
+    // }).catch(function (err) {
+    //   console.log('Err', err);
+    // })
   }
 });
 
 bot.on('polling_error', (error) => {
-  console.log(error);  // => 'EFATAL'
+  // console.log(error);  // => 'EFATAL'
 });
