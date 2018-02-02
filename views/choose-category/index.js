@@ -7,10 +7,12 @@ const ViewGreeting = require('../greeting')
 const ViewChooseAudience = require('../choose-audience')
 
 const VIEW_NAME = '__choose_category'
-const NEXT_PAGE = VIEW_NAME + '_next_page'
-const PREV_PAGE = VIEW_NAME + '_prev_page'
+const NEXT_PAGE = VIEW_NAME + ':page:next'
+const PREV_PAGE = VIEW_NAME + ':page:prev'
 const NEXT = VIEW_NAME + '_next'
 // const SELL = '__greeting_sell'
+
+const ITEMS_PER_PAGE = 6
 
 
 function getSelectedIcon (value, selected = []) {
@@ -24,7 +26,8 @@ function getSelectedIcon (value, selected = []) {
 function renderInlineKeyboard ({
   list, selected, offset, locale
 }) {
-  const keys = list.slice(offset, 6).map((item) => {
+  console.log('renderInlineKeyboard', offset);
+  const keys = list.slice(offset, offset + ITEMS_PER_PAGE).map((item) => {
     return {
       text: i18[locale].titles[item.title] + getSelectedIcon(item._id, selected),
       callback_data: `${VIEW_NAME}:select:${item._id}`
@@ -44,11 +47,37 @@ function renderInlineKeyboard ({
   return keyboard
 }
 
-function render (payload, params = { selected: [] }) {
+function renderControls ({ offset, list }) {
+  const isFirstPage = offset === 0
+  const isLastPage = offset + ITEMS_PER_PAGE >= list.length
+
+  const controls = []
+
+  if (!isFirstPage) {
+    controls.push(
+      {
+        text: '⬅️',
+        callback_data: PREV_PAGE
+      }
+    )
+  }
+  if (!isLastPage) {
+    controls.push(
+      {
+        text: '➡️',
+        callback_data: NEXT_PAGE
+      }
+    )
+  }
+
+  return controls
+}
+
+function render (payload, { init, offset }) {
   User._getLocale(payload).then((locale) => {
-    User.createOrderDraft(payload, { flush: params.init }).then((user) => {
+    User.createOrderDraft(payload, { flush: init }).then((user) => {
       Category.getAllCategories().then(list => {
-        const categoriesKeys = renderInlineKeyboard({ list, selected: (user.orderDraft || []).categories, locale, offset: 0 })
+        const categoriesKeys = renderInlineKeyboard({ list, selected: (user.orderDraft || []).categories, locale, offset })
         const additionParams = {
           message_id: payload.message.message_id,
           chat_id: payload.from.id
@@ -57,16 +86,7 @@ function render (payload, params = { selected: [] }) {
         bot.editMessageReplyMarkup({
           inline_keyboard: [
             ...categoriesKeys,
-            [
-              {
-                text: '⬅️',
-                callback_data: PREV_PAGE
-              },
-              {
-                text: '➡️',
-                callback_data: NEXT_PAGE
-              }
-            ],
+            renderControls({ offset: offset , list }),
             [{
               text: i18[locale].next,
               callback_data: ViewChooseAudience.actions.RENDER
@@ -75,7 +95,7 @@ function render (payload, params = { selected: [] }) {
         }, additionParams).catch((err) => console.error('catched on editMessageReplyMarkup'))
 
         bot.editMessageText(
-          `Выберите подходящие категории канала`,
+          i18[locale].body,
           additionParams
         ).catch((err) => void 0)
       })
@@ -108,10 +128,32 @@ function init () {
           })
         })
       })
+
+      return
+    }
+
+    if (payload.data.indexOf(`${VIEW_NAME}:page:`) === 0) {
+      const direction = payload.data.match(/:page:(\w+)/)[1]
+      if (direction === 'prev') {
+        offset = offset - ITEMS_PER_PAGE
+      } else {
+        offset = offset + ITEMS_PER_PAGE
+      }
+
+      if (offset < 0) {
+        offset = 0
+      }
+
+      // console.log('offset', offset);
+
+      render(payload, { offset, isBuying: true})
+
+      return
     }
 
     switch (payload.data) {
       case ViewGreeting.actions.BUY:
+        offset = 0
         render(payload, { selected, offset, isBuying: true, init: true })
         break
 

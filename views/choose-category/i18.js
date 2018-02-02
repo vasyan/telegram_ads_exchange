@@ -13,8 +13,9 @@ const RUSSIAN = {
     adult: '18+',
   },
 
-  next: 'След',
-  prev: 'Пред'
+  body: 'Выберите подходящие категории',
+
+  next: 'Далее',
 }
 const ENGLISH = {
   titles: {
@@ -31,8 +32,9 @@ const ENGLISH = {
     adult: '18+',
   },
 
+  body: 'Choose interested categories',
+
   next: 'Next',
-  prev: 'Prev'
 }
 
 module.exports = {
