@@ -26,7 +26,6 @@ function getSelectedIcon (value, selected = []) {
 function renderInlineKeyboard ({
   list, selected, offset, locale
 }) {
-  console.log('renderInlineKeyboard', offset);
   const keys = list.slice(offset, offset + ITEMS_PER_PAGE).map((item) => {
     return {
       text: i18[locale].titles[item.title] + getSelectedIcon(item._id, selected),
@@ -73,60 +72,54 @@ function renderControls ({ offset, list }) {
   return controls
 }
 
-function render (payload, { init, offset }) {
-  User.getLocale(payload).then((locale) => {
-    User.createOrderDraft(payload, { flush: init }).then((user) => {
-      Category.getAllCategories().then(list => {
-        const categoriesKeys = renderInlineKeyboard({ list, selected: (user.orderDraft || []).categories, locale, offset })
-        const additionParams = {
-          message_id: payload.message.message_id,
-          chat_id: payload.from.id
-        }
+async function render (payload, { init, offset }) {
+  const locale = await User.getLocale(payload)
+  const user = await User.createOrderDraft(payload, { flush: init })
+  const list = await Category.getAllCategories()
 
-        bot.editMessageReplyMarkup({
-          inline_keyboard: [
-            ...categoriesKeys,
-            renderControls({ offset: offset , list }),
-            [{
-              text: i18[locale].next,
-              callback_data: ViewChooseAudience.actions.RENDER
-            }],
-          ],
-        }, additionParams).catch((err) => console.error('catched on editMessageReplyMarkup'))
+  const categoriesKeys = renderInlineKeyboard({ list, selected: (user.orderDraft || []).categories, locale, offset })
+  const additionParams = {
+    message_id: payload.message.message_id,
+    chat_id: payload.from.id
+  }
 
-        bot.editMessageText(
-          i18[locale].body,
-          additionParams
-        ).catch((err) => void 0)
-      })
-    }).catch((err) => {
-      console.log('choose category render error', err)
-    })
-  })
+  bot.editMessageReplyMarkup({
+    inline_keyboard: [
+      ...categoriesKeys,
+      renderControls({ offset: offset , list }),
+      [{
+        text: i18[locale].next,
+        callback_data: ViewChooseAudience.actions.RENDER
+      }],
+    ],
+  }, additionParams).catch((err) => console.error('catched on editMessageReplyMarkup'))
+
+  bot.editMessageText(
+    i18[locale].body,
+    additionParams
+  ).catch((err) => void 0)
 }
 
 function init () {
   let selected = []
   let offset = 0
 
-  bot.on('callback_query', function (payload) {
+  bot.on('callback_query', async function (payload) {
     if (payload.data.indexOf(`${VIEW_NAME}:select:`) === 0) {
       const selectedCategoryId = payload.data.match(/:select:(\w+)/)[1]
+      const user = await User.findUser({ id: payload.from.id })
+      const order = await Order.findOrder({ _id: user.orderDraft })
 
-      User.findUser({ id: payload.from.id }).then((user) => {
-        Order.findOrder({ _id: user.orderDraft }).then((order) => {
-          if (order.categories.indexOf(selectedCategoryId) === -1) {
-            order.categories.push(selectedCategoryId)
-          } else {
-            order.categories.remove(selectedCategoryId)
-          }
+      if (order.categories.indexOf(selectedCategoryId) === -1) {
+        order.categories.push(selectedCategoryId)
+      } else {
+        order.categories.remove(selectedCategoryId)
+      }
 
-          order.save().then(() => {
-            render(payload, { offset, isBuying: true })
-          }).catch(err => {
-            console.log('error on order save ', err)
-          })
-        })
+      order.save().then(() => {
+        render(payload, { offset, isBuying: true })
+      }).catch(err => {
+        console.log('error on order save ', err)
       })
 
       return

@@ -31,32 +31,31 @@ const SHOW_COMMANDS = [
 ]
 
 function init () {
-  bot.on('message', function (msg) {
+  bot.on('message', async function (msg) {
     if (SHOW_COMMANDS.indexOf(msg.text) !== -1) {
-      User.addUser(msg.from).then(({ user }) => {
-        const dictionary = i18[User.getLocaleFromUser(user)]
+      const { user } = await User.addUser(msg.from)
+      const dictionary = i18[User.getLocaleFromUser(user)]
 
-        bot.sendMessage(
-          msg.chat.id,
-          `${dictionary.welcome}, ${user.username}! ` +
-          dictionary.greetingBrif,
-          {
-            reply_markup: {
-              inline_keyboard: [
-                [{
-                  text: dictionary.inlineMenu.buy,
-                  callback_data: BUY
-                }],
-                [{
-                  text: dictionary.inlineMenu.sell,
-                  callback_data: SELL
-                }]
-              ],
-            }
+      bot.sendMessage(
+        msg.chat.id,
+        `${dictionary.welcome}, ${user.username}! ` +
+        dictionary.greetingBrif,
+        {
+          reply_markup: {
+            inline_keyboard: [
+              [{
+                text: dictionary.inlineMenu.buy,
+                callback_data: BUY
+              }],
+              [{
+                text: dictionary.inlineMenu.sell,
+                callback_data: SELL
+              }]
+            ],
           }
-        ).catch(function (err) {
-          console.log('Greeting view sending error', err);
-        })
+        }
+      ).catch(function (err) {
+        console.log('Greeting view sending error', err);
       })
     }
   })

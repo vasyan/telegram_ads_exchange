@@ -51,4 +51,20 @@ const userSchema = new Schema({
 // const englishObjectId = '581d0b8db33e47e7008726bd'
 // const russianObjectId = '581d0b8db33e47e7008726be'
 
+userSchema.methods.getFullName = function(cb) {
+  return this.firstName + ' ' + this.lastName
+}
+
+userSchema.statics.findOrderDraft = function(userId) {
+  return new Promise((resolve, reject) => {
+    this.find({}, function(error, users){
+      console.log('users', users)
+    })
+
+    this.findById(userId, function (err, user) {
+      resolve(user.orderDraft)
+    })
+  })
+}
+
 module.exports = mongoose.model('user', userSchema);

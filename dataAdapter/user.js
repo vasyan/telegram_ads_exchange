@@ -1,3 +1,5 @@
+const mongoose = require('mongoose');
+
 const ModelUser = require('../models/user')
 const ModelOrder = require('../models/order')
 const DataOrder = require('./order')
@@ -20,7 +22,14 @@ function findUser(query) {
   return new Promise(resolve => {
     ModelUser.findOne(query)
       .populate([
-        'orderDraft'
+        'orderDraft',
+        {
+          path: 'orderDraft',
+          populate: {
+            path: 'category',
+            model: 'category',
+          },
+        },
         // 'categories',
         // 'jobs',
         // 'job_draft',
@@ -96,24 +105,18 @@ function getLocaleFromUser(user) {
   return 'ENGLISH'
 }
 
-function getLocale(msg) {
-  return new Promise((resolve) => {
-    findUser({ id: msg.from.id }).then((user) => {
-      if (!user || user.interfaceLanguage === 0) {
-        resolve('RUSSIAN')
+async function getLocale(msg) {
+  const user = await findUser({ id: msg.from.id })
 
-        return
-      }
+  if (!user || user.interfaceLanguage === 0) {
+    return 'RUSSIAN'
+  }
 
-      resolve('ENGLISH')
-    })
-  })
+  return 'ENGLISH'
 }
 
 function createOrderDraft (msg, { flush }) {
-  console.log('++++++ createOrderDraft');
   return new Promise((resolve) => {
-    console.log('createOrderDraft', msg);
     ModelUser.findOne({ id: msg.from.id }).then((user) => {
       if (user && user.orderDraft) {
         if (flush) {

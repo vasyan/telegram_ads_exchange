@@ -27,33 +27,31 @@ const i18 = {
   }
 }
 
-function render (msg) {
-  User.getLocale(msg).then((locale) => {
-    const additionParams = {
-      message_id: msg.message.message_id,
-      chat_id: msg.from.id,
-      parse_mode: 'Markdown'
-    }
+async function render (msg) {
+  const locale = await User.getLocale(msg)
+  const additionParams = {
+    message_id: msg.message.message_id,
+    chat_id: msg.from.id,
+    parse_mode: 'Markdown'
+  }
 
-    bot.editMessageReplyMarkup({
-      inline_keyboard: [[{
-        text: i18[locale].keyboard.any,
-        callback_data: ACTION_CHOOSE_ANY
-      }]],
-    }, additionParams)
-    bot.editMessageText(
-      i18[locale].body,
-      additionParams
-    )
-  })
+  bot.editMessageReplyMarkup({
+    inline_keyboard: [[{
+      text: i18[locale].keyboard.any,
+      callback_data: ACTION_CHOOSE_ANY
+    }]],
+  }, additionParams)
+  bot.editMessageText(
+    i18[locale].body,
+    additionParams
+  )
 }
 
-function setAudience (msg, values) {
-  User.createOrderDraft(msg, { flush: false }).then((user) => {
-    Order.setAudience(user.orderDraft, values).then(() => {
-      ViewChoosePrice.render(msg)
-    })
-  })
+async function setAudience (msg, values) {
+  const user = await User.createOrderDraft(msg, { flush: false })
+
+  await Order.setAudience(user.orderDraft, values)
+  ViewChoosePrice.render(msg)
 }
 
 function handleActions ({ action, payload }) {
@@ -64,10 +62,10 @@ function handleActions ({ action, payload }) {
   }
 }
 
-function handleInvalidInput (msg) {
-  User.getLocale(msg).then((locale) => {
-    bot.sendMessage(msg.from.id, i18[locale].invalid)
-  })
+async function handleInvalidInput (msg) {
+  const locale = User.getLocale(msg)
+
+  bot.sendMessage(msg.from.id, i18[locale].invalid)
 }
 
 function init () {
