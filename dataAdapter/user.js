@@ -4,79 +4,47 @@ const ModelUser = require('../models/user')
 const ModelOrder = require('../models/order')
 const DataOrder = require('./order')
 
-function getAllUsers(query = {}) {
-  return new Promise(resolve => {
-    ModelUser.find(query)
-      // .populate(['reviews'])
-      .exec((err, users) => {
-        if (err) {
-          throw err
-        }
-
-        resolve(users)
-      })
-  })
+async function getAllUsers(query = {}) {
+  return await ModelUser.find(query)
 }
 
-function findUser(query) {
-  return new Promise(resolve => {
-    ModelUser.findOne(query)
-      .populate([
-        'orderDraft',
-        {
-          path: 'orderDraft',
-          populate: {
-            path: 'category',
-            model: 'category',
-          },
+async function findUser(query) {
+  return await ModelUser.findOne(query)
+    .populate([
+      'orderDraft',
+      {
+        path: 'orderDraft',
+        populate: {
+          path: 'category',
+          model: 'category',
         },
-        // 'categories',
-        // 'jobs',
-        // 'job_draft',
-        // 'reviews',
-        // 'languages',
-        // {
-        //   path: 'jobs',
-        //   populate: {
-        //     path: 'category',
-        //     model: 'category',
-        //   },
-        // },
-        // {
-        //   path: 'job_draft',
-        //   populate: {
-        //     path: 'category',
-        //     model: 'category',
-        //   },
-        // },
-      ])
-      .exec((err, user) => {
-        if (err) {
-          throw err
-        }
-
-        resolve(user)
-      })
-  })
+      },
+      // 'categories',
+      // 'jobs',
+      // 'job_draft',
+      // 'reviews',
+      // 'languages',
+      // {
+      //   path: 'jobs',
+      //   populate: {
+      //     path: 'category',
+      //     model: 'category',
+      //   },
+      // },
+      // {
+      //   path: 'job_draft',
+      //   populate: {
+      //     path: 'category',
+      //     model: 'category',
+      //   },
+      // },
+    ])
 }
 
-function findUserById(id) {
-  return new Promise(resolve => {
-    ModelUser.findById(id)
-      // .populate(['categories', 'jobs', 'job_draft', 'reviews', 'reports'])
-      .populate(['orderDraft'])
-      .exec((err, user) => {
-        if (err) {
-          throw err
-        }
-
-        if (!user) {
-          throw new Error('No user found')
-        }
-
-        resolve(user)
-      })
-  })
+async function findUserById(id) {
+  return await ModelUser.findById(id)
+    // .populate(['categories', 'jobs', 'job_draft', 'reviews', 'reports'])
+    .populate(['orderDraft'])
 }
 
 function addUser(user) {
@@ -115,29 +83,25 @@ async function getLocale(msg) {
   return 'ENGLISH'
 }
 
-function createOrderDraft (msg, { flush }) {
-  return new Promise((resolve) => {
-    ModelUser.findOne({ id: msg.from.id }).then((user) => {
-      if (user && user.orderDraft) {
-        if (flush) {
-          DataOrder.flushOrder(user.orderDraft).then(() => {
-            findUserById(user._id).then(resolve)
-          })
-        } else {
-          findUserById(user._id).then(resolve)
-        }
-      } else {
-        const newOrder = new ModelOrder({})
+async function createOrderDraft (msg, { flush }) {
+  const user = await ModelUser.findOne({ id: msg.from.id })
 
-        user.orderDraft = newOrder._id
-        DataOrder.addOrder(newOrder)
+  if (user && user.orderDraft) {
+    if (flush) {
+      await DataOrder.flushOrder(user.orderDraft)
+    }
 
-        user.save().then((user) => {
-          findUserById(user._id).then(resolve)
-        })
-      }
-    })
-  })
+    return await findUserById(user._id)
+  } else {
+    const newOrder = new ModelOrder({})
+
+    user.orderDraft = newOrder._id
+    await DataOrder.addOrder(newOrder)
+
+    const newUser = await user.save()
+
+    return await findUserById(newUser._id)
+  }
 }
 
 
