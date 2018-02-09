@@ -6,7 +6,7 @@ const ViewTesting = require('./testing')
 
 module.exports = {
   init: function () {
-    ViewGreeting.init()
+    // ViewGreeting.init()
     ViewChooseAudience.init()
     ViewChooseCategory.init()
     ViewChoosePrice.init()

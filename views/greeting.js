@@ -1,6 +1,7 @@
 const bot = require('../engine')
 const User = require('../dataAdapter/user')
 const mainMenu = require('../menus/main')
+const AbstractView = require('./abstract')
 
 const BUY = '__greeting_buy'
 const SELL = '__greeting_sell'
@@ -30,39 +31,45 @@ const SHOW_COMMANDS = [
   mainMenu.commands.RUSSIAN.start
 ]
 
-function init () {
-  bot.on('message', async function (msg) {
-    if (SHOW_COMMANDS.indexOf(msg.text) !== -1) {
-      const { user } = await User.addUser(msg.from)
-      const dictionary = i18[User.getLocaleFromUser(user)]
+class GreetingView extends AbstractView {
+  constructor () {
+    super()
 
-      bot.sendMessage(
-        msg.chat.id,
-        `${dictionary.welcome}, ${user.username}! ` +
-        dictionary.greetingBrif,
-        {
-          reply_markup: {
-            inline_keyboard: [
-              [{
-                text: dictionary.inlineMenu.buy,
-                callback_data: BUY
-              }],
-              [{
-                text: dictionary.inlineMenu.sell,
-                callback_data: SELL
-              }]
-            ],
-          }
+    this.name = 'greeting-view'
+
+    this.onMessage(SHOW_COMMANDS, this.handleShow)
+  }
+
+  async handleShow (msg) {
+    const { user } = await User.addUser(msg.from)
+    const dictionary = i18[User.getLocaleFromUser(user)]
+
+    this.render(
+      msg.chat.id,
+      `${dictionary.welcome}, ${user.username}! ` +
+      dictionary.greetingBrif,
+      {
+        reply_markup: {
+          inline_keyboard: [
+            [{
+              text: dictionary.inlineMenu.buy,
+              callback_data: BUY
+            }],
+            [{
+              text: dictionary.inlineMenu.sell,
+              callback_data: SELL
+            }]
+          ],
         }
-      ).catch(function (err) {
-        console.log('Greeting view sending error', err);
-      })
-    }
-  })
+      }
+    )
+  }
 }
 
+const instance = new GreetingView()
+
 module.exports = {
-  init,
+  instance,
   actions: {
     BUY,
     SELL
