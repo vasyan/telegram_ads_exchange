@@ -38,6 +38,7 @@ class AbstractView {
 		this.render = this.render.bind(this)
 
 		this.messageHandlers = new Map()
+		this.messagePatternsHandlers = new Map()
 		this.queriesHandlers = new Map()
 		this.init()
 	}
@@ -53,6 +54,12 @@ class AbstractView {
 		})
 	}
 
+	onMessagePattern(patterns, handler) {
+		patterns.forEach(item => {
+			this.messagePatternsHandlers.set(item, handler)
+		})
+	}
+
 	onCallbackQuery(queries = [], handler) {
 		queries.forEach(item => {
 			this.queriesHandlers.set(item, handler)
@@ -64,7 +71,7 @@ class AbstractView {
 		const splitted = data.replace(PATTERN_ARGS, '')
 
 		if (this.queriesHandlers.has(splitted)) {
-			this.queriesHandlers.get(splitted).apply(this, [payload])
+			this.runHandler(this.queriesHandlers.get(splitted), [payload])
 		}
 	}
 
@@ -72,7 +79,23 @@ class AbstractView {
 		const { text } = msg
 
 		if (this.messageHandlers.has(text)) {
-			this.messageHandlers.get(text).apply(this, [msg])
+			this.runHandler(this.messageHandlers.get(text), [msg])
+		}
+
+		this.messagePatternsHandlers.forEach((handler, key) => {
+			const match = text.match(new RegExp(key))
+
+			if (match) {
+				this.runHandler(handler, [msg, match])
+			}
+		})
+	}
+
+	runHandler(handler, args) {
+		try {
+			handler.apply(this, args)
+		} catch (err) {
+			throw new Error('Error on handler', err)
 		}
 	}
 
@@ -88,10 +111,15 @@ class AbstractView {
 		bot.sendMessage(id, message, options).catch(this.handleRenderError)
 	}
 
+	showError(id, body) {
+		bot.sendMessage(id, `❗️${body}❗️`)
+	}
+
 	editRendered(msg, payload) {
 		const additionParams = {
 			message_id: msg.message.message_id,
 			chat_id: msg.from.id,
+			parse_mode: 'Markdown',
 		}
 
 		if (payload.markup) {

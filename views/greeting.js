@@ -46,7 +46,7 @@ class GreetingView extends AbstractView {
 
 		this.name = 'greeting-view'
 
-		this.onMessage(SHOW_COMMANDS, this.handleShow)
+		this.onMessage(SHOW_COMMANDS, this.handleShow.bind(this))
 	}
 
 	async handleShow(msg) {

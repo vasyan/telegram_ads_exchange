@@ -5,11 +5,11 @@ const ViewChoosePrice = require('./choose-price')
 const ViewTesting = require('./testing')
 
 module.exports = {
-  init: function () {
-    // ViewGreeting.init()
-    ViewChooseAudience.init()
-    // ViewChooseCategory.init()
-    ViewChoosePrice.init()
-    // ViewTesting.init()
-  }
+	init: function() {
+		// ViewGreeting.init()
+		// ViewChooseAudience.init()
+		// ViewChooseCategory.init()
+		ViewChoosePrice.init()
+		// ViewTesting.init()
+	},
 }

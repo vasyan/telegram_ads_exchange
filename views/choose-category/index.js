@@ -6,9 +6,6 @@ const ViewGreeting = require('../greeting')
 const ViewChooseAudience = require('../choose-audience')
 const AbstractView = require('../abstract')
 
-const VIEW_NAME = '__choose_category'
-const NEXT = VIEW_NAME + '_next'
-
 const ITEMS_PER_PAGE = 6
 
 class ChooseCategoryView extends AbstractView {
@@ -18,7 +15,6 @@ class ChooseCategoryView extends AbstractView {
 			NEXT_PAGE: this.wrapActionName('next-page'),
 			PREV_PAGE: this.wrapActionName('prev-page'),
 			SELECT: this.wrapActionName('select'),
-			ALL: this.wrapActionName('all'),
 		}
 	}
 
@@ -97,7 +93,7 @@ class ChooseCategoryView extends AbstractView {
 				[
 					{
 						text: this.getSubstrings('next'),
-						callback_data: ViewChooseAudience.actions.RENDER,
+						callback_data: ViewChooseAudience.instance.actions.RENDER,
 					},
 				],
 			],
@@ -168,7 +164,4 @@ const instance = new ChooseCategoryView()
 
 module.exports = {
 	instance,
-	actions: {
-		NEXT,
-	},
 }
