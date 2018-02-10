@@ -37,7 +37,7 @@ class ChooseCategoryView extends AbstractView {
 
 	async handleShow(payload) {
 		this.user = await User.createOrderDraft(payload, { flush: true })
-		this._render(payload, { isBuying: true })
+		this._render(payload)
 	}
 
 	handleNextPage(payload) {
@@ -83,7 +83,6 @@ class ChooseCategoryView extends AbstractView {
 
 	async renderMarkup() {
 		const list = await Category.getAllCategories()
-
 		const categoriesRows = this.renderCategoriesRows({ list })
 
 		return {

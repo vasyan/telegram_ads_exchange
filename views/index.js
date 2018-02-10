@@ -9,7 +9,7 @@ module.exports = {
 		// ViewGreeting.init()
 		// ViewChooseAudience.init()
 		// ViewChooseCategory.init()
-		ViewChoosePrice.init()
+		// ViewChoosePrice.init()
 		// ViewTesting.init()
 	},
 }

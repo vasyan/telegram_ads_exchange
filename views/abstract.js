@@ -31,6 +31,10 @@ class AbstractView {
 		return this.i18[this.locale][name]
 	}
 
+	wrapActionName(name) {
+		return `${this.actionsPattern}:${name}`
+	}
+
 	constructor() {
 		this.handleOnCallbackQuery = this.handleOnCallbackQuery.bind(this)
 		this.handleOnMessage = this.handleOnMessage.bind(this)
@@ -40,6 +44,7 @@ class AbstractView {
 		this.messageHandlers = new Map()
 		this.messagePatternsHandlers = new Map()
 		this.queriesHandlers = new Map()
+
 		this.init()
 	}
 
@@ -95,20 +100,24 @@ class AbstractView {
 		try {
 			handler.apply(this, args)
 		} catch (err) {
+			console.error('New error')
 			throw new Error('Error on handler', err)
 		}
 	}
 
-	wrapActionName(name) {
-		return `${this.actionsPattern}:${name}`
+	mergeOptionsWithdefault(options) {
+		return Object.assign(
+			{
+				parse_mode: 'Markdown',
+			},
+			options
+		)
 	}
 
 	render(id, message, options) {
-		bot.sendMessage(id, message, options).catch(this.handleRenderError)
-	}
-
-	rerender(id, message, options) {
-		bot.sendMessage(id, message, options).catch(this.handleRenderError)
+		bot
+			.sendMessage(id, message, this.mergeOptionsWithdefault(options))
+			.catch(this.handleRenderError)
 	}
 
 	showError(id, body) {
@@ -116,11 +125,13 @@ class AbstractView {
 	}
 
 	editRendered(msg, payload) {
-		const additionParams = {
-			message_id: msg.message.message_id,
-			chat_id: msg.from.id,
-			parse_mode: 'Markdown',
-		}
+		const additionParams = Object.assign(
+			{
+				message_id: msg.message.message_id,
+				chat_id: msg.from.id,
+			},
+			payload.params || {}
+		)
 
 		if (payload.markup) {
 			bot.editMessageReplyMarkup(payload.markup, additionParams)

@@ -1,4 +1,3 @@
-const bot = require('../engine')
 const User = require('../dataAdapter/user')
 const mainMenu = require('../menus/main')
 const AbstractView = require('./abstract')
@@ -28,11 +27,6 @@ const i18 = {
 	RUSSIAN,
 }
 
-const SHOW_COMMANDS = [
-	mainMenu.commands.ENGLISH.start,
-	mainMenu.commands.RUSSIAN.start,
-]
-
 class GreetingView extends AbstractView {
 	get actions() {
 		return {
@@ -44,14 +38,20 @@ class GreetingView extends AbstractView {
 	constructor() {
 		super()
 
+		this.i18 = i18
 		this.name = 'greeting-view'
 
-		this.onMessage(SHOW_COMMANDS, this.handleShow.bind(this))
+		this.onMessage(
+			[mainMenu.commands.ENGLISH.start, mainMenu.commands.RUSSIAN.start],
+			this.handleShow
+		)
 	}
 
 	async handleShow(msg) {
 		const { user } = await User.addUser(msg.from)
 		const dictionary = i18[User.getLocaleFromUser(user)]
+
+		await this.setLocale(msg)
 
 		this.render(
 			msg.chat.id,
@@ -61,14 +61,14 @@ class GreetingView extends AbstractView {
 					inline_keyboard: [
 						[
 							{
-								text: dictionary.inlineMenu.buy,
-								callback_data: this.wrapActionName(BUY),
+								text: this.getSubstrings('inlineMenu').buy,
+								callback_data: this.actions.BUY,
 							},
 						],
 						[
 							{
-								text: dictionary.inlineMenu.sell,
-								callback_data: this.wrapActionName(SELL),
+								text: this.getSubstrings('inlineMenu').sell,
+								callback_data: this.actions.SELL,
 							},
 						],
 					],

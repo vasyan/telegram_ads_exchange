@@ -1,44 +1,95 @@
-const bot = require('../engine')
-const ViewPostRequestFinish = require('./post-request-finish')
+const User = require('../dataAdapter/user')
+const Order = require('../dataAdapter/order')
+const MakeRequestFinish = require('./make-order-finish')
+const AbstractView = require('./abstract')
 
 const PATTERN_INPUT = /(\d+)\s?-\s?(\d+)\sRUB/
-const VIEW_NAME = '__choose_price'
 
-function render (payload, params) {
-  // console.log('payload', payload);
-  // const additionParams = {
-  //   message_id: payload.message.message_id,
-  //   chat_id: payload.from.id,
-  //   parse_mode: 'Markdown'
-  // }
-
-  bot.sendMessage(
-    payload.from.id,
-    'Введите желаемую цену в формате ⚠️ *от-до RUB* ⚠️',
-    {
-      parse_mode: 'Markdown'
-    }
-  )
-
-  // bot.editMessageReplyMarkup({
-  //   inline_keyboard: [
-  //     [{
-  //       text: 'Далее',
-  //       callback_data: 'foobar'
-  //     }],
-  //   ],
-  // }, additionParams).then(function (payload) {
-  //   bot.editMessageText(`Введите диапазон желаемой аудитории канала, в формате *число-число*`, additionParams)
-  // })
+const i18 = {
+	RUSSIAN: {
+		keyboard: {
+			any: 'Любая',
+		},
+		body: 'Введите желаему цену рекламы ⚠️ *от-до* ⚠️',
+		invalid: 'Введенные данные не коректы',
+	},
+	ENGLISH: {
+		keyboard: {
+			any: 'Any',
+		},
+		body: 'Choose range of price with format ⚠️ *from-to* ⚠️',
+		invalid: 'Input is invalid',
+	},
 }
 
-function init () {
-  bot.onText(PATTERN_INPUT, (msg, match) => {
-    ViewPostRequestFinish.render(msg)
-  })
+class ViewChoosePrice extends AbstractView {
+	get actions() {
+		return {
+			RENDER: this.wrapActionName('render'),
+			ANY: this.wrapActionName('any'),
+		}
+	}
+
+	constructor() {
+		super()
+
+		this.i18 = i18
+		this.name = 'choose-price-view'
+
+		this.onCallbackQuery([this.actions.RENDER], this.handleShow)
+		this.onCallbackQuery([this.actions.ANY], this.handleAny)
+		this.onMessagePattern([PATTERN_INPUT], this.handleInput)
+	}
+
+	handleShow(payload) {
+		this._render(payload)
+	}
+
+	handleInput(payload, match) {
+		if (match[1] > match[2]) {
+			this.handleInvalidInput(payload)
+
+			return
+		}
+
+		this.setPrice(payload, [match[1], match[2]])
+	}
+
+	handleAny(payload) {
+		this.setPrice(payload)
+	}
+
+	async setPrice(payload, values) {
+		const user = await User.createOrderDraft(payload, {})
+
+		await Order.setPrice(user.orderDraft, values)
+		MakeRequestFinish.instance._render.call(MakeRequestFinish.instance, payload)
+	}
+
+	handleInvalidInput(msg) {
+		this.showError(msg.from.id, this.getSubstrings('invalid'))
+	}
+
+	async _render(payload) {
+		await this.setLocale(payload)
+
+		this.render(payload.from.id, this.getSubstrings('body'), {
+			reply_markup: {
+				inline_keyboard: [
+					[
+						{
+							text: this.getSubstrings('keyboard').any,
+							callback_data: this.actions.ANY,
+						},
+					],
+				],
+			},
+		})
+	}
 }
+
+const instance = new ViewChoosePrice()
 
 module.exports = {
-  init,
-  render
+	instance,
 }

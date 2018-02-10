@@ -45,25 +45,25 @@ class ChooseAuditoryView extends AbstractView {
 		this._render(payload)
 	}
 
-	handleInput(msg, match) {
+	handleInput(payload, match) {
 		if (match[1] > match[2]) {
-			this.handleInvalidInput(msg)
+			this.handleInvalidInput(payload)
 
 			return
 		}
 
-		this.setAudience(msg, [match[1], match[2]])
+		this.setAudience(payload, [match[1], match[2]])
 	}
 
 	handleAny(payload) {
 		this.setAudience(payload)
 	}
 
-	async setAudience(msg, values) {
-		const user = await User.createOrderDraft(msg, {})
+	async setAudience(payload, values) {
+		const user = await User.createOrderDraft(payload, {})
 
 		await Order.setAudience(user.orderDraft, values)
-		ViewChoosePrice.render(msg)
+		ViewChoosePrice.instance._render.call(ViewChoosePrice.instance, payload)
 	}
 
 	handleInvalidInput(msg) {
@@ -85,6 +85,9 @@ class ChooseAuditoryView extends AbstractView {
 				],
 			},
 			text: this.getSubstrings('body'),
+			params: {
+				parse_mode: 'Markdown',
+			},
 		})
 	}
 }
