@@ -1,80 +1,111 @@
-const _ = require('lodash')
 const bot = require('../engine')
+const User = require('../dataAdapter/user')
 
-class Command {
-  // getUser () {
-  //   if (this.user) {
-  //     return this.user
-  //   }
-  //
-  //
-  // }
+const PATTERN_ARGS = /@.+/
 
-  get actionsPattern () {
-    if (!this.name) {
-      throw new Error('You must define view name at the constructor')
-    }
+class AbstractView {
+	get actionsPattern() {
+		if (!this.name) {
+			throw new Error('😅 You must define view name at the constructor 😅')
+		}
 
-    return this.name + `:action:`
-  }
+		return this.name + `:action:`
+	}
 
-  constructor (options) {
-    // this.options = Object.clone(options)
-    // this.chatId = options.chatId
-    // this.actions = options.actions
-    // this.actionsPattern = `${options.name}:action:`
-    this.handleOnCallbackQuery = this.handleOnCallbackQuery.bind(this)
-    this.handleOnMessage = this.handleOnMessage.bind(this)
+	async setLocale(msg) {
+		if (this.lastUserId !== msg.from.id || !this.locale) {
+			this.locale = await User.getLocale(msg)
+			return
+		}
+	}
 
-    this.messageHandlers = new Map()
-    this.init()
-  }
+	getSubstrings(name) {
+		if (!this.i18) {
+			throw new Error('😅 You must define i18 dictionary 😅')
+		}
 
-  init () {
-    bot.on('callback_data', this.handleOnCallbackQuery)
-    bot.on('message', this.handleOnMessage)
-  }
+		if (!this.locale) {
+			throw new Error('Locale is not defined')
+		}
 
-  onMessage (messages = [], handler) {
-    messages.forEach((item) => {
-      this.messageHandlers.set(item, handler)
-    })
-  }
+		return this.i18[this.locale][name]
+	}
 
-  handleOnCallbackQuery (payload) {
-    if (payload.data.indexOf(this.actionsPattern) !== -1) {
-      const action = payload.data.match(/:action:(\w+)/)[1]
-      const actionHandlerName = `handleAction${action.charAt(0).toUpperCase() + action.slice(1)}`
+	constructor() {
+		this.handleOnCallbackQuery = this.handleOnCallbackQuery.bind(this)
+		this.handleOnMessage = this.handleOnMessage.bind(this)
+		this.handleRenderError = this.handleRenderError.bind(this)
+		this.render = this.render.bind(this)
 
-      if (typeof this[actionHandlerName] === 'function') {
-        this[actionHandlerName](payload)
-      }
-    }
-  }
+		this.messageHandlers = new Map()
+		this.queriesHandlers = new Map()
+		this.init()
+	}
 
-  handleOnMessage (msg) {
-    const { text } = msg
+	init() {
+		bot.on('callback_query', this.handleOnCallbackQuery)
+		bot.on('message', this.handleOnMessage)
+	}
 
-    if (this.messageHandlers.has(text)) {
-      this.messageHandlers.get(text).apply(this, [msg])
-    }
-  }
+	onMessage(messages = [], handler) {
+		messages.forEach(item => {
+			this.messageHandlers.set(item, handler)
+		})
+	}
 
-  render (id, message, options) {
-    bot
-      .sendMessage(id, message, options)
-      .catch(this.handleRenderError)
-  }
+	onCallbackQuery(queries = [], handler) {
+		queries.forEach(item => {
+			this.queriesHandlers.set(item, handler)
+		})
+	}
 
-  rerender (id, message, options) {
-    bot
-      .sendMessage(id, message, options)
-      .catch(this.handleRenderError)
-  }
+	handleOnCallbackQuery(payload) {
+		const { data } = payload
+		const splitted = data.replace(PATTERN_ARGS, '')
 
-  handleRenderError (err) {
-    console.log(`Error on render ${this.name} view`, err)
-  }
+		if (this.queriesHandlers.has(splitted)) {
+			this.queriesHandlers.get(splitted).apply(this, [payload])
+		}
+	}
+
+	handleOnMessage(msg) {
+		const { text } = msg
+
+		if (this.messageHandlers.has(text)) {
+			this.messageHandlers.get(text).apply(this, [msg])
+		}
+	}
+
+	wrapActionName(name) {
+		return `${this.actionsPattern}:${name}`
+	}
+
+	render(id, message, options) {
+		bot.sendMessage(id, message, options).catch(this.handleRenderError)
+	}
+
+	rerender(id, message, options) {
+		bot.sendMessage(id, message, options).catch(this.handleRenderError)
+	}
+
+	editRendered(msg, payload) {
+		const additionParams = {
+			message_id: msg.message.message_id,
+			chat_id: msg.from.id,
+		}
+
+		if (payload.markup) {
+			bot.editMessageReplyMarkup(payload.markup, additionParams)
+		}
+
+		if (payload.text) {
+			bot.editMessageText(payload.text, additionParams)
+		}
+	}
+
+	handleRenderError(err) {
+		console.log(`Error on render ${this.name} view`, err)
+	}
 }
 
-module.exports = Command
+module.exports = AbstractView

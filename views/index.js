@@ -8,7 +8,7 @@ module.exports = {
   init: function () {
     // ViewGreeting.init()
     ViewChooseAudience.init()
-    ViewChooseCategory.init()
+    // ViewChooseCategory.init()
     ViewChoosePrice.init()
     // ViewTesting.init()
   }

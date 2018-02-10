@@ -1,180 +1,181 @@
-const bot = require('../../engine')
 const Category = require('../../dataAdapter/category')
 const User = require('../../dataAdapter/user')
 const Order = require('../../dataAdapter/order')
 const i18 = require('./i18')
 const ViewGreeting = require('../greeting')
 const ViewChooseAudience = require('../choose-audience')
+const AbstractView = require('../abstract')
 
 const VIEW_NAME = '__choose_category'
-const NEXT_PAGE = VIEW_NAME + ':page:next'
-const PREV_PAGE = VIEW_NAME + ':page:prev'
 const NEXT = VIEW_NAME + '_next'
-// const SELL = '__greeting_sell'
 
 const ITEMS_PER_PAGE = 6
 
+class ChooseCategoryView extends AbstractView {
+	get actions() {
+		return {
+			NEXT: this.wrapActionName('next'),
+			NEXT_PAGE: this.wrapActionName('next-page'),
+			PREV_PAGE: this.wrapActionName('prev-page'),
+			SELECT: this.wrapActionName('select'),
+			ALL: this.wrapActionName('all'),
+		}
+	}
 
-function getSelectedIcon (value, selected = []) {
-  if (selected.indexOf(value) > -1) {
-    return ' ✅'
-  }
+	constructor() {
+		super()
 
-  return ''
+		this.i18 = i18
+		this.name = 'choose-category-view'
+		this.offset = 0
+
+		this.listenQueries()
+	}
+
+	listenQueries() {
+		this.onCallbackQuery([ViewGreeting.instance.actions.BUY], this.handleShow)
+		this.onCallbackQuery([this.actions.NEXT_PAGE], this.handleNextPage)
+		this.onCallbackQuery([this.actions.PREV_PAGE], this.handlePrevPage)
+		this.onCallbackQuery([this.actions.SELECT], this.handleSelect)
+	}
+
+	async handleShow(payload) {
+		this.user = await User.createOrderDraft(payload, { flush: true })
+		this._render(payload, { isBuying: true })
+	}
+
+	handleNextPage(payload) {
+		this.offset = this.offset + ITEMS_PER_PAGE
+		this._render(payload)
+	}
+
+	handlePrevPage(payload) {
+		this.offset = this.offset - ITEMS_PER_PAGE
+
+		if (this.offset < 0) {
+			this.offset = 0
+		}
+
+		this._render(payload)
+	}
+
+	async handleSelect(payload) {
+		const selectedCategoryId = payload.data.match(/@(\w+)/)[1]
+		const user = await User.findUser({ id: payload.from.id })
+		const order = await Order.findOrder({ _id: user.orderDraft })
+
+		if (order.categories.indexOf(selectedCategoryId) === -1) {
+			order.categories.push(selectedCategoryId)
+		} else {
+			order.categories.remove(selectedCategoryId)
+		}
+
+		order
+			.save()
+			.then(() => {
+				this._render(payload, { isBuying: true })
+			})
+			.catch(err => {
+				console.log('error on order save ', err)
+			})
+
+		return
+	}
+
+	async _render(payload) {
+		this.user = await User.createOrderDraft(payload, {})
+		await this.setLocale(payload)
+
+		this.editRendered(payload, {
+			markup: await this.renderMarkup(payload),
+			text: this.getSubstrings('body'),
+		})
+	}
+
+	async renderMarkup() {
+		const list = await Category.getAllCategories()
+
+		const categoriesRows = this.renderCategoriesRows({ list })
+
+		return {
+			inline_keyboard: [
+				...categoriesRows,
+				this.renderControls({ list }),
+				[
+					{
+						text: this.getSubstrings('next'),
+						callback_data: ViewChooseAudience.actions.RENDER,
+					},
+				],
+			],
+		}
+	}
+
+	renderControls({ list }) {
+		const isFirstPage = this.offset === 0
+		const isLastPage = this.offset + ITEMS_PER_PAGE >= list.length
+
+		const controls = [
+			{
+				text: '⬅️',
+				callback_data: isFirstPage ? '_BLANK_' : this.actions.PREV_PAGE,
+			},
+			{
+				text: `${this.offset / ITEMS_PER_PAGE}/${Math.floor(
+					list.length / ITEMS_PER_PAGE
+				)}`,
+				callback_data: '_BLANK_',
+			},
+			{
+				text: '➡️',
+				callback_data: isLastPage ? '_BLANK_' : this.actions.NEXT_PAGE,
+			},
+		]
+
+		return controls
+	}
+
+	renderCategoriesRows({ list }) {
+		const { offset } = this
+
+		const keys = list.slice(offset, offset + ITEMS_PER_PAGE).map(item => {
+			return {
+				text:
+					this.getSubstrings('titles')[item.title] +
+					this.getSelectedIcon(item._id),
+				callback_data: `${this.actions.SELECT}@${item._id}`,
+			}
+		})
+
+		const keyboard = []
+
+		for (let i = 0; i < keys.length; i++) {
+			if ((i + 2) % 2 == 0) {
+				keyboard.push([])
+			}
+
+			keyboard[keyboard.length - 1].push(keys[i])
+		}
+
+		return keyboard
+	}
+
+	getSelectedIcon(value) {
+		const selected = (this.user.orderDraft || []).categories
+
+		if (selected.indexOf(value) > -1) {
+			return ' ✅'
+		}
+
+		return ''
+	}
 }
 
-function renderInlineKeyboard ({
-  list, selected, offset, locale
-}) {
-  const keys = list.slice(offset, offset + ITEMS_PER_PAGE).map((item) => {
-    return {
-      text: i18[locale].titles[item.title] + getSelectedIcon(item._id, selected),
-      callback_data: `${VIEW_NAME}:select:${item._id}`
-    }
-  })
-
-  const keyboard = []
-
-  for (let i = 0; i < keys.length; i++){
-    if ((i + 2) % 2 == 0) {
-      keyboard.push([])
-    }
-
-    keyboard[keyboard.length - 1].push(keys[i])
-  }
-
-  return keyboard
-}
-
-function renderControls ({ offset, list }) {
-  const isFirstPage = offset === 0
-  const isLastPage = offset + ITEMS_PER_PAGE >= list.length
-
-  const controls = []
-
-  if (!isFirstPage) {
-    controls.push(
-      {
-        text: '⬅️',
-        callback_data: PREV_PAGE
-      }
-    )
-  }
-  if (!isLastPage) {
-    controls.push(
-      {
-        text: '➡️',
-        callback_data: NEXT_PAGE
-      }
-    )
-  }
-
-  return controls
-}
-
-async function render (payload, { init, offset }) {
-  const locale = await User.getLocale(payload)
-  const user = await User.createOrderDraft(payload, { flush: init })
-  const list = await Category.getAllCategories()
-
-  const categoriesKeys = renderInlineKeyboard({ list, selected: (user.orderDraft || []).categories, locale, offset })
-  const additionParams = {
-    message_id: payload.message.message_id,
-    chat_id: payload.from.id
-  }
-
-  bot.editMessageReplyMarkup({
-    inline_keyboard: [
-      ...categoriesKeys,
-      renderControls({ offset: offset , list }),
-      [{
-        text: i18[locale].next,
-        callback_data: ViewChooseAudience.actions.RENDER
-      }],
-    ],
-  }, additionParams).catch((err) => console.error('catched on editMessageReplyMarkup'))
-
-  bot.editMessageText(
-    i18[locale].body,
-    additionParams
-  ).catch((err) => void 0)
-}
-
-function init () {
-  let selected = []
-  let offset = 0
-
-  bot.on('callback_query', async function (payload) {
-    if (payload.data.indexOf(`${VIEW_NAME}:select:`) === 0) {
-      const selectedCategoryId = payload.data.match(/:select:(\w+)/)[1]
-      const user = await User.findUser({ id: payload.from.id })
-      const order = await Order.findOrder({ _id: user.orderDraft })
-
-      if (order.categories.indexOf(selectedCategoryId) === -1) {
-        order.categories.push(selectedCategoryId)
-      } else {
-        order.categories.remove(selectedCategoryId)
-      }
-
-      order.save().then(() => {
-        render(payload, { offset, isBuying: true })
-      }).catch(err => {
-        console.log('error on order save ', err)
-      })
-
-      return
-    }
-
-    if (payload.data.indexOf(`${VIEW_NAME}:page:`) === 0) {
-      const direction = payload.data.match(/:page:(\w+)/)[1]
-      if (direction === 'prev') {
-        offset = offset - ITEMS_PER_PAGE
-      } else {
-        offset = offset + ITEMS_PER_PAGE
-      }
-
-      if (offset < 0) {
-        offset = 0
-      }
-
-      // console.log('offset', offset);
-
-      render(payload, { offset, isBuying: true})
-
-      return
-    }
-
-    switch (payload.data) {
-      case ViewGreeting.actions.BUY:
-        offset = 0
-        render(payload, { selected, offset, isBuying: true, init: true })
-        break
-
-      case ViewGreeting.actions.SELL:
-        render(payload, { selected, offset, isSelling: true, init: true })
-        break
-
-      case PREV_PAGE:
-        offset = offset - 6
-
-        if (offset < 0) {
-          offset = 0
-        }
-        render(payload, { selected, offset })
-        break
-
-      case NEXT_PAGE:
-        offset = offset + 6
-        render(payload, { selected, offset })
-        break
-    }
-  })
-}
+const instance = new ChooseCategoryView()
 
 module.exports = {
-  init,
-  render,
-  actions: {
-    NEXT
-  }
+	instance,
+	actions: {
+		NEXT,
+	},
 }
