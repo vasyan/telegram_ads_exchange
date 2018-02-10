@@ -100,6 +100,19 @@ async function createOrderDraft(msg, { flush }) {
 	}
 }
 
+async function finishOrderDraft(msg) {
+	console.log('lol')
+	const user = await ModelUser.findOne({ id: msg.from.id })
+
+	console.log('here')
+	if (user && user.orderDraft) {
+		user.orders.push(user.orderDraft)
+		user.orderDraft = null
+
+		return await user.save()
+	}
+}
+
 module.exports = {
 	getAllUsers,
 	findUser,
@@ -108,4 +121,5 @@ module.exports = {
 	getLocaleFromUser,
 	getLocale,
 	createOrderDraft,
+	finishOrderDraft,
 }
