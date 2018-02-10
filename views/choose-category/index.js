@@ -70,16 +70,9 @@ class ChooseCategoryView extends AbstractView {
 			order.categories.remove(selectedCategoryId)
 		}
 
-		order
-			.save()
-			.then(() => {
-				this._render(payload, { isBuying: true })
-			})
-			.catch(err => {
-				console.log('error on order save ', err)
-			})
+		await order.save()
 
-		return
+		this._render(payload, { isBuying: true })
 	}
 
 	async _render(payload) {
