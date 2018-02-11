@@ -59,11 +59,11 @@ class ChooseAuditoryView extends AbstractView {
 		this.setAudience(payload)
 	}
 
-	async setAudience(payload, values) {
-		const user = await User.createOrderDraft(payload, {})
+	async setAudience(msg, values) {
+		const user = await User.findUserByMessage(msg)
 
 		await Order.setAudience(user.orderDraft, values)
-		ViewChoosePrice.instance._render.call(ViewChoosePrice.instance, payload)
+		ViewChoosePrice.instance._render.call(ViewChoosePrice.instance, msg)
 	}
 
 	handleInvalidInput(msg) {
