@@ -71,7 +71,7 @@ class ChooseAuditoryView extends AbstractView {
 	}
 
 	async _render(payload) {
-		await this.setLocale(payload)
+		await this.updateLocale(payload)
 
 		this.editRendered(payload, {
 			markup: {

@@ -73,7 +73,7 @@ class ChooseCategoryView extends AbstractView {
 
 	async _render(payload) {
 		this.user = await User.createOrderDraft(payload, {})
-		await this.setLocale(payload)
+		await this.updateLocale(payload)
 
 		this.editRendered(payload, {
 			markup: await this.renderMarkup(payload),

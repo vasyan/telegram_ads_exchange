@@ -12,7 +12,7 @@ class AbstractView {
 		return this.name + `:action:`
 	}
 
-	async setLocale(msg) {
+	async updateLocale(msg) {
 		if (this.lastUserId !== msg.from.id || !this.locale) {
 			this.locale = await User.getLocale(msg)
 			return

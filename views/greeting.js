@@ -51,7 +51,7 @@ class GreetingView extends AbstractView {
 		const { user } = await User.addUser(msg.from)
 		const dictionary = i18[User.getLocaleFromUser(user)]
 
-		await this.setLocale(msg)
+		await this.updateLocale(msg)
 
 		this.render(
 			msg.chat.id,

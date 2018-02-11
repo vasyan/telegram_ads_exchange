@@ -71,7 +71,7 @@ class ViewChoosePrice extends AbstractView {
 	}
 
 	async _render(payload) {
-		await this.setLocale(payload)
+		await this.updateLocale(payload)
 
 		this.render(payload.from.id, this.getSubstrings('body'), {
 			reply_markup: {

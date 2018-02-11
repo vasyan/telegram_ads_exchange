@@ -34,7 +34,7 @@ class MakeRequestFinishView extends AbstractView {
 	}
 
 	async _render(msg) {
-		await this.setLocale(msg)
+		await this.updateLocale(msg)
 
 		User.finishOrderDraft(msg)
 
