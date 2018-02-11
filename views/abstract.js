@@ -1,3 +1,4 @@
+const R = require('ramda')
 const bot = require('../engine')
 const User = require('../dataAdapter/user')
 
@@ -19,7 +20,7 @@ class AbstractView {
 		}
 	}
 
-	getSubstrings(name) {
+	getSubstrings(path) {
 		if (!this.i18) {
 			throw new Error('😅 You must define i18 dictionary 😅')
 		}
@@ -28,7 +29,7 @@ class AbstractView {
 			throw new Error('Locale is not defined')
 		}
 
-		return this.i18[this.locale][name]
+		return R.path(path, this.i18[this.locale])
 	}
 
 	wrapActionName(name) {

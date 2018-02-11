@@ -61,13 +61,13 @@ class GreetingView extends AbstractView {
 					inline_keyboard: [
 						[
 							{
-								text: this.getSubstrings('inlineMenu').buy,
+								text: this.getSubstrings('inlineMenu.buy'),
 								callback_data: this.actions.BUY,
 							},
 						],
 						[
 							{
-								text: this.getSubstrings('inlineMenu').sell,
+								text: this.getSubstrings('inlineMenu.sell'),
 								callback_data: this.actions.SELL,
 							},
 						],

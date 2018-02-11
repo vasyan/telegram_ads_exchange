@@ -78,7 +78,7 @@ class ViewChoosePrice extends AbstractView {
 				inline_keyboard: [
 					[
 						{
-							text: this.getSubstrings('keyboard').any,
+							text: this.getSubstrings('keyboard.any'),
 							callback_data: this.actions.ANY,
 						},
 					],
