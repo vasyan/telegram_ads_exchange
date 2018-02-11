@@ -1,4 +1,4 @@
-const _ = require('lodash')
+const R = require('ramda')
 const Order = require('../models/order')
 
 function getAllOrders(query = {}) {
@@ -45,7 +45,7 @@ function addOrder(order) {
 function flushOrder(id) {
 	return new Promise(resolve => {
 		const defaultOrder = new Order().toJSON()
-		Order.findByIdAndUpdate(id, _.omit(defaultOrder, ['_id']), resolve)
+		Order.findByIdAndUpdate(id, R.omit(['_id'], defaultOrder), resolve)
 	})
 }
 
