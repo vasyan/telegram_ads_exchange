@@ -29,7 +29,7 @@ class AbstractView {
 			throw new Error('Locale is not defined')
 		}
 
-		return R.path(path, this.i18[this.locale])
+		return R.path(path.split('.'), this.i18[this.locale])
 	}
 
 	wrapActionName(name) {
