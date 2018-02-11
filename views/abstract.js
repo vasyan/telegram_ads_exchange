@@ -54,22 +54,28 @@ class AbstractView {
 		bot.on('message', this.handleOnMessage)
 	}
 
-	onMessage(messages = [], handler) {
-		messages.forEach(item => {
-			this.messageHandlers.set(item, handler)
-		})
+	onMessage(message, handler) {
+		this.addEventListeners(message, handler, this.messageHandlers)
 	}
 
-	onMessagePattern(patterns, handler) {
-		patterns.forEach(item => {
-			this.messagePatternsHandlers.set(item, handler)
-		})
+	onMessagePattern(pattern, handler) {
+		this.addEventListeners(pattern, handler, this.messagePatternsHandlers)
 	}
 
-	onCallbackQuery(queries = [], handler) {
-		queries.forEach(item => {
-			this.queriesHandlers.set(item, handler)
-		})
+	onCallbackQuery(query, handler) {
+		this.addEventListeners(query, handler, this.queriesHandlers)
+	}
+
+	addEventListeners(event, handler, listeners) {
+		if (Array.isArray(event)) {
+			event.forEach(item => {
+				listeners.set(item, handler)
+			})
+
+			return
+		}
+
+		listeners.set(event, handler)
 	}
 
 	handleOnCallbackQuery(payload) {
