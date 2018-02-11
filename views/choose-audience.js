@@ -36,9 +36,9 @@ class ChooseAuditoryView extends AbstractView {
 		this.i18 = i18
 		this.name = 'choose-auditory-view'
 
-		this.onCallbackQuery([this.actions.RENDER], this.handleShow)
-		this.onCallbackQuery([this.actions.ANY], this.handleAny)
-		this.onMessagePattern([PATTERN_INPUT], this.handleInput)
+		this.onCallbackQuery(this.actions.RENDER, this.handleShow)
+		this.onCallbackQuery(this.actions.ANY, this.handleAny)
+		this.onMessagePattern(PATTERN_INPUT, this.handleInput)
 	}
 
 	handleShow(payload) {

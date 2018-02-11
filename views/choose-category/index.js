@@ -29,10 +29,10 @@ class ChooseCategoryView extends AbstractView {
 	}
 
 	listenQueries() {
-		this.onCallbackQuery([ViewGreeting.instance.actions.BUY], this.handleShow)
-		this.onCallbackQuery([this.actions.NEXT_PAGE], this.handleNextPage)
-		this.onCallbackQuery([this.actions.PREV_PAGE], this.handlePrevPage)
-		this.onCallbackQuery([this.actions.SELECT], this.handleSelect)
+		this.onCallbackQuery(ViewGreeting.instance.actions.BUY, this.handleShow)
+		this.onCallbackQuery(this.actions.NEXT_PAGE, this.handleNextPage)
+		this.onCallbackQuery(this.actions.PREV_PAGE, this.handlePrevPage)
+		this.onCallbackQuery(this.actions.SELECT, this.handleSelect)
 	}
 
 	async handleShow(payload) {

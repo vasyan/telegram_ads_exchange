@@ -26,7 +26,7 @@ class MakeRequestFinishView extends AbstractView {
 		this.i18 = i18
 		this.name = 'buy-request-finish-view'
 
-		this.onMessage([this.actions.RENDER], this.handleShow)
+		this.onMessage(this.actions.RENDER, this.handleShow)
 	}
 
 	handleShow(payload) {
