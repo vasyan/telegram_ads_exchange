@@ -1,158 +1,174 @@
 const AbstractUiView = require('./abstract')
 
 class Paginator extends AbstractUiView {
-	get actions() {
-		return {
-			SELECT: this.wrapActionName('select'),
-			NEXT_PAGE: this.wrapActionName('next-page'),
-			PREV_PAGE: this.wrapActionName('prev-page'),
-		}
-	}
+  get actions() {
+    return {
+      SELECT: this.wrapActionName('select'),
+      NEXT_PAGE: this.wrapActionName('next-page'),
+      PREV_PAGE: this.wrapActionName('prev-page'),
+    }
+  }
 
-	get isFirstPage() {
-		return this.offset === 0
-	}
+  get isFirstPage() {
+    return this.offset === 0
+  }
 
-	get isLastPage() {
-		return this.offset + this.itemsPerPage >= this.list.length
-	}
+  get isLastPage() {
+    return this.offset + this.itemsPerPage >= this.list.length
+  }
 
-	get progress() {
-		return `${this.offset / this.itemsPerPage}/${Math.floor(
-			this.list.length / this.itemsPerPage
-		)}`
-	}
+  get progress() {
+    return `${this.offset / this.itemsPerPage}/${Math.floor(
+      this.list.length / this.itemsPerPage
+    )}`
+  }
 
-	constructor({
-		body,
-		list,
-		itemsPerPage,
-		onSelect,
-		itemView,
-		keyboard,
-		columns,
-	}) {
-		super(...arguments)
+  get isOverfilled() {
+    return this.list.length > this.itemsPerPage
+  }
 
-		this.name = 'paginator-id-' + Math.floor(Math.random() * 999999 + 1)
-		this.body = body
-		this.list = list
-		this.itemView = itemView
-		this.onSelect = onSelect
-		this.keyboard = keyboard || []
-		this.itemsPerPage = itemsPerPage
-		this.offset = 0
-		this.columns = columns || 2
+  constructor({
+    body,
+    list,
+    itemsPerPage,
+    onSelect,
+    itemView,
+    keyboard,
+    columns,
+  }) {
+    super(...arguments)
 
-		this.listenEvents()
-	}
+    this.name = 'paginator-id-' + Math.floor(Math.random() * 999999 + 1)
+    this.body = body
+    this.list = list
+    this.itemView = itemView
+    this.onSelect = onSelect
+    this.keyboard = keyboard || []
+    this.itemsPerPage = itemsPerPage
+    this.offset = 0
+    this.columns = columns || 2
 
-	listenEvents() {
-		this.onCallbackQuery(this.actions.SELECT, this.handleSelect)
-		this.onCallbackQuery(this.actions.NEXT_PAGE, this.handleNextPage)
-		this.onCallbackQuery(this.actions.PREV_PAGE, this.handlePrevPage)
-	}
+    this.listenEvents()
+  }
 
-	next() {
-		this.offset = this.offset + this.itemsPerPage
+  listenEvents() {
+    this.onCallbackQuery(this.actions.SELECT, this.handleSelect)
+    this.onCallbackQuery(this.actions.NEXT_PAGE, this.handleNextPage)
+    this.onCallbackQuery(this.actions.PREV_PAGE, this.handlePrevPage)
+  }
 
-		this._render()
-	}
+  next() {
+    this.offset = this.offset + this.itemsPerPage
 
-	prev() {
-		this.offset = this.offset - this.itemsPerPage
+    this._render()
+  }
 
-		if (this.offset < 0) {
-			this.offset = 0
-		}
+  prev() {
+    this.offset = this.offset - this.itemsPerPage
 
-		this._render()
-	}
+    if (this.offset < 0) {
+      this.offset = 0
+    }
 
-	renderRows() {
-		const { offset } = this
+    this._render()
+  }
 
-		const items = this.list
-			.slice(offset, offset + this.itemsPerPage)
-			.map(item => {
-				return {
-					text: this.getItemView(item),
-					callback_data: `${this.actions.SELECT}@${this.itemView.getId(item)}`,
-				}
-			})
+  renderRows() {
+    const { offset } = this
 
-		const rows = []
+    const items = this.list
+      .slice(offset, offset + this.itemsPerPage)
+      .map(item => {
+        return {
+          text: this.getItemView(item),
+          callback_data: `${this.actions.SELECT}@${this.itemView.getId(item)}`,
+        }
+      })
 
-		for (let i = 0; i < items.length; i++) {
-			if ((i + this.columns) % this.columns == 0) {
-				rows.push([])
-			}
+    const rows = []
 
-			rows[rows.length - 1].push(items[i])
-		}
+    for (let i = 0; i < items.length; i++) {
+      if ((i + this.columns) % this.columns == 0) {
+        rows.push([])
+      }
 
-		return rows
-	}
+      rows[rows.length - 1].push(items[i])
+    }
 
-	renderControls() {
-		const controls = [
-			{
-				text: '⬅️',
-				callback_data: this.isFirstPage ? '_BLANK_' : this.actions.PREV_PAGE,
-			},
-			{
-				text: this.progress,
-				callback_data: '_BLANK_',
-			},
-			{
-				text: '➡️',
-				callback_data: this.isLastPage ? '_BLANK_' : this.actions.NEXT_PAGE,
-			},
-		]
+    return rows
+  }
 
-		return controls
-	}
+  renderControls() {
+    if (!this.isOverfilled) {
+      return []
+    }
 
-	renderAdditionUi() {
-		if (this.keyboard) {
-			return this.keyboard.render()
-		}
+    const controls = [
+      {
+        text: '⬅️',
+        callback_data: this.isFirstPage ? '_BLANK_' : this.actions.PREV_PAGE,
+      },
+      {
+        text: this.progress,
+        callback_data: '_BLANK_',
+      },
+      {
+        text: '➡️',
+        callback_data: this.isLastPage ? '_BLANK_' : this.actions.NEXT_PAGE,
+      },
+    ]
 
-		return []
-	}
+    return controls
+  }
 
-	getItemView(item) {
-		return this.itemView.getText(item)
-	}
+  renderAdditionUi() {
+    if (this.keyboard) {
+      return this.keyboard.render()
+    }
 
-	handleSelect(message) {
-		const id = message.data.match(/@(\w+)/)[1]
+    return []
+  }
 
-		this.onSelect({ id, message })
-	}
+  getItemView(item) {
+    return this.itemView.getText(item)
+  }
 
-	handleNextPage() {
-		this.next()
-	}
+  handleSelect(message) {
+    const id = message.data.match(/@(\w+)/)[1]
 
-	handlePrevPage() {
-		this.prev()
-	}
+    this.onSelect({ id, message })
+  }
 
-	_render() {
-		const markup = {
-			inline_keyboard: [
-				...this.renderRows(),
-				this.renderControls(),
-				this.renderAdditionUi(),
-			],
-		}
+  handleNextPage() {
+    this.next()
+  }
 
-		this.editRendered(this.message, {
-			markup,
-			text: this.body,
-		})
-	}
+  handlePrevPage() {
+    this.prev()
+  }
+
+  async _render(params) {
+    const markup = {
+      inline_keyboard: [
+        ...this.renderRows(),
+        this.renderControls(),
+        this.renderAdditionUi(),
+      ],
+    }
+
+    if (!this.isEditableMessage(this.message)) {
+      this.render(this.message.chat.id, this.body, {
+        reply_markup: markup,
+      })
+
+      return
+    }
+
+    this.editRendered(this.message, {
+      markup,
+      text: this.body,
+    })
+  }
 }
 
 module.exports = Paginator

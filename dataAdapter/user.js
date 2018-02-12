@@ -2,46 +2,58 @@ const ModelUser = require('../models/user')
 const ModelOrder = require('../models/order')
 const DataOrder = require('./order')
 
+const commonPopulate = [
+	'orderDraft',
+	{
+		path: 'orderDraft',
+		populate: {
+			path: 'category',
+			model: 'category',
+		},
+	},
+	'orders',
+	{
+		path: 'orders',
+		populate: {
+			path: 'category',
+			model: 'category',
+		},
+	},
+	// 'categories',
+	// 'jobs',
+	// 'job_draft',
+	// 'reviews',
+	// 'languages',
+	// {
+	//   path: 'jobs',
+	//   populate: {
+	//     path: 'category',
+	//     model: 'category',
+	//   },
+	// },
+	// {
+	//   path: 'job_draft',
+	//   populate: {
+	//     path: 'category',
+	//     model: 'category',
+	//   },
+	// },
+]
+
 async function getAllUsers(query = {}) {
-	return await ModelUser.find(query)
+	return ModelUser.find(query)
 }
 
 async function findUser(query) {
-	return await ModelUser.findOne(query).populate([
-		'orderDraft',
-		{
-			path: 'orderDraft',
-			populate: {
-				path: 'category',
-				model: 'category',
-			},
-		},
-		// 'categories',
-		// 'jobs',
-		// 'job_draft',
-		// 'reviews',
-		// 'languages',
-		// {
-		//   path: 'jobs',
-		//   populate: {
-		//     path: 'category',
-		//     model: 'category',
-		//   },
-		// },
-		// {
-		//   path: 'job_draft',
-		//   populate: {
-		//     path: 'category',
-		//     model: 'category',
-		//   },
-		// },
-	])
+	return ModelUser.findOne(query).populate(commonPopulate)
+}
+
+async function findUserByMessage(message) {
+	return findUser({ id: message.from.id })
 }
 
 async function findUserById(id) {
-	return await ModelUser.findById(id)
-		// .populate(['categories', 'jobs', 'job_draft', 'reviews', 'reports'])
-		.populate(['orderDraft'])
+	return await ModelUser.findById(id).populate(commonPopulate)
 }
 
 function addUser(user) {
@@ -101,10 +113,8 @@ async function createOrderDraft(msg, { flush }) {
 }
 
 async function finishOrderDraft(msg) {
-	console.log('lol')
 	const user = await ModelUser.findOne({ id: msg.from.id })
 
-	console.log('here')
 	if (user && user.orderDraft) {
 		user.orders.push(user.orderDraft)
 		user.orderDraft = null
@@ -117,6 +127,7 @@ module.exports = {
 	getAllUsers,
 	findUser,
 	findUserById,
+	findUserByMessage,
 	addUser,
 	getLocaleFromUser,
 	getLocale,
