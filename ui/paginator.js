@@ -147,7 +147,7 @@ class Paginator extends AbstractUiView {
     this.prev()
   }
 
-  async _render(params) {
+  async _render() {
     const markup = {
       inline_keyboard: [
         ...this.renderRows(),

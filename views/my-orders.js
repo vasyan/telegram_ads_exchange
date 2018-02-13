@@ -1,15 +1,18 @@
 const User = require('../dataAdapter/user')
 const mainMenu = require('../menus/main')
+const OrderView = require('./order')
 const AbstractView = require('./abstract')
 const Paginator = require('../ui/paginator')
 
 const RUSSIAN = {
   body: 'Список активных заявок на размещение рекламы.',
+  itemTitle: 'Заказ на размещение ♨️',
   noOrders: 'У вас нет активных заказов.',
   back: '⬅️ Назад',
 }
 const ENGLISH = {
   body: 'List of active orders of ad.',
+  itemTitle: 'Заказ на размещение ♨️',
   noOrders: 'You dont have active orders.',
   back: '⬅️ Back',
 }
@@ -33,9 +36,13 @@ class MyOrdersView extends AbstractView {
     this.i18 = i18
     this.name = 'my-orders-view'
 
-    this.onMessage(this.actions.RENDER, this.handleShow)
+    this.onCallbackQuery(this.actions.RENDER, this.handleShow)
     this.onMessage(
-      [mainMenu.commands.ENGLISH.myOrders, mainMenu.commands.RUSSIAN.myOrders],
+      [
+        this.actions.RENDER,
+        mainMenu.commands.ENGLISH.myOrders,
+        mainMenu.commands.RUSSIAN.myOrders,
+      ],
       this.handleShow
     )
 
@@ -43,7 +50,7 @@ class MyOrdersView extends AbstractView {
     this.initKeyboard()
   }
 
-  initPaginator({message, list}) {
+  initPaginator({ message, list }) {
     this.paginator = new Paginator({
       message,
       list,
@@ -62,20 +69,13 @@ class MyOrdersView extends AbstractView {
       getId: item => {
         return item._id
       },
-      getText: item => {
-        return 'Заказ на замещение'
-      },
+      getText: () => this.getSubstrings('itemTitle'),
     }
   }
 
   initKeyboard() {
     this.keyboard = {
-      render: () => [
-        {
-          text: this.getSubstrings('back'),
-          callback_data: '__BLANK',
-        },
-      ],
+      render: () => [],
     }
   }
 
@@ -89,6 +89,10 @@ class MyOrdersView extends AbstractView {
 
   handleShow(payload) {
     this._render(payload)
+  }
+
+  handleSelect(payload) {
+    OrderView.instance._render(payload)
   }
 
   async _render(message) {
@@ -107,12 +111,6 @@ class MyOrdersView extends AbstractView {
   }
 }
 
-const instance = new MyOrdersView()
-
 module.exports = {
-  instance,
-  constants: {
-    RUSSIAN,
-    ENGLISH,
-  },
+  instance: new MyOrdersView(),
 }
