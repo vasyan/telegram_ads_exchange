@@ -119,12 +119,12 @@ function getUserUncompletedOrderDraft(user) {
   return null
 }
 
-async function createOrderDraft(message, { flush }) {
+async function getOrderDraft(message, params = {}) {
   let user = await findUserByMessage(message)
   let currentDraft = getUserUncompletedOrderDraft(user)
 
   if (currentDraft) {
-    if (flush) {
+    if (params.flush) {
       currentDraft = await DataOrder.flushOrder(currentDraft._id)
     }
   } else {
@@ -140,15 +140,16 @@ async function createOrderDraft(message, { flush }) {
   return { user, order: currentDraft }
 }
 
-async function finishOrderDraft(msg) {
-  const user = await ModelUser.findOne({ id: msg.from.id })
+async function finishOrderDraft(message) {
+  return new Promise(async (resolve, reject) => {
+    const { user, order } = await getOrderDraft(message)
 
-  if (user && user.orderDraft) {
-    user.orders.push(user.orderDraft)
-    user.orderDraft = null
-
-    return await user.save()
-  }
+    if (user && order) {
+      order.update({ state: 1 }, resolve)
+    } else {
+      reject(`Can't change order status`)
+    }
+  })
 }
 
 module.exports = {
@@ -159,6 +160,6 @@ module.exports = {
   addUser,
   getLocaleFromUser,
   getLocale,
-  createOrderDraft,
+  getOrderDraft,
   finishOrderDraft,
 }

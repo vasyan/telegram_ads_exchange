@@ -1,6 +1,5 @@
 const Category = require('../../dataAdapter/category')
 const User = require('../../dataAdapter/user')
-const Order = require('../../dataAdapter/order')
 const i18 = require('./i18')
 const ViewGreeting = require('../greeting')
 const ViewChooseAudience = require('../choose-audience')
@@ -96,7 +95,7 @@ class ChooseCategoryView extends AbstractView {
   }
 
   async handleShow(payload) {
-    const { user, order } = await User.createOrderDraft(payload, {
+    const { user, order } = await User.getOrderDraft(payload, {
       flush: true,
     })
 
@@ -121,7 +120,9 @@ class ChooseCategoryView extends AbstractView {
   }
 
   async _render(message) {
-    this.user = await User.createOrderDraft(message, {})
+    const { user } = await User.getOrderDraft(message, {})
+
+    this.user = user
 
     await this.updateLocale(message)
 

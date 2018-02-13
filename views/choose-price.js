@@ -60,9 +60,9 @@ class ViewChoosePrice extends AbstractView {
   }
 
   async setPrice(message, values) {
-    const user = await User.findUserByMessage(message)
+    const { order } = await User.getOrderDraft(message)
 
-    await Order.setPrice(user.orderDraft, values)
+    await Order.setPrice(order._id, values)
     MakeRequestFinish.instance._render.call(MakeRequestFinish.instance, message)
   }
 
@@ -88,8 +88,6 @@ class ViewChoosePrice extends AbstractView {
   }
 }
 
-const instance = new ViewChoosePrice()
-
 module.exports = {
-  instance,
+  instance: new ViewChoosePrice(),
 }
