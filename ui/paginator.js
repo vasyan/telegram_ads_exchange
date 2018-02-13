@@ -147,7 +147,9 @@ class Paginator extends AbstractUiView {
     this.prev()
   }
 
-  async _render() {
+  async _render(params) {
+    this.message = this.message || (params && params.message)
+
     const markup = {
       inline_keyboard: [
         ...this.renderRows(),
@@ -157,7 +159,7 @@ class Paginator extends AbstractUiView {
     }
 
     if (!this.isEditableMessage(this.message)) {
-      this.render(this.message.chat.id, this.body, {
+      this.render(this.message.from.id, this.body, {
         reply_markup: markup,
       })
 

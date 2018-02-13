@@ -1,136 +1,164 @@
-const ModelUser = require('../models/user')
-const ModelOrder = require('../models/order')
+const R = require('ramda')
+const { Model: ModelUser } = require('../models/user')
+const { Model: ModelOrder } = require('../models/order')
 const DataOrder = require('./order')
 
 const commonPopulate = [
-	'orderDraft',
-	{
-		path: 'orderDraft',
-		populate: {
-			path: 'category',
-			model: 'category',
-		},
-	},
-	'orders',
-	{
-		path: 'orders',
-		populate: {
-			path: 'category',
-			model: 'category',
-		},
-	},
-	// 'categories',
-	// 'jobs',
-	// 'job_draft',
-	// 'reviews',
-	// 'languages',
-	// {
-	//   path: 'jobs',
-	//   populate: {
-	//     path: 'category',
-	//     model: 'category',
-	//   },
-	// },
-	// {
-	//   path: 'job_draft',
-	//   populate: {
-	//     path: 'category',
-	//     model: 'category',
-	//   },
-	// },
+  {
+    path: 'order',
+    populate: {
+      path: 'category',
+      model: 'category',
+    },
+  },
+  'orders',
+  {
+    path: 'counter',
+    populate: {
+      path: 'category',
+      model: 'category',
+    },
+  },
+  // 'categories',
+  // 'jobs',
+  // 'job_draft',
+  // 'reviews',
+  // 'languages',
+  // {
+  //   path: 'jobs',
+  //   populate: {
+  //     path: 'category',
+  //     model: 'category',
+  //   },
+  // },
+  // {
+  //   path: 'job_draft',
+  //   populate: {
+  //     path: 'category',
+  //     model: 'category',
+  //   },
+  // },
 ]
 
-async function getAllUsers(query = {}) {
-	return ModelUser.find(query)
+function getAllUsers(query = {}) {
+  return new Promise(resolve => {
+    ModelUser.find(query).exec((err, user) => {
+      if (err) {
+        throw err
+      }
+
+      resolve(user)
+    })
+  })
 }
 
-async function findUser(query) {
-	return ModelUser.findOne(query).populate(commonPopulate)
+function findUser(query) {
+  return new Promise(resolve => {
+    ModelUser.findOne(query)
+      .populate(commonPopulate)
+      .exec((err, user) => {
+        if (err) {
+          throw err
+        }
+
+        resolve(user)
+      })
+  })
 }
 
-async function findUserByMessage(message) {
-	return findUser({ id: message.from.id })
+function findUserByMessage(message) {
+  return findUser({ id: message.from.id })
 }
 
-async function findUserById(id) {
-	return await ModelUser.findById(id).populate(commonPopulate)
+function findUserById(id) {
+  return ModelUser.findById(id).populate(commonPopulate)
 }
 
 function addUser(user) {
-	return new Promise((resolve, reject) =>
-		findUser({ id: user.id }).then(dbUserObject => {
-			if (dbUserObject) {
-				resolve({ user: dbUserObject, new: false })
+  return new Promise((resolve, reject) =>
+    findUser({ id: user.id }).then(dbUserObject => {
+      if (dbUserObject) {
+        resolve({ user: dbUserObject, new: false })
 
-				return
-			}
+        return
+      }
 
-			new ModelUser(user)
-				.save()
-				.then(savedUser => resolve({ user: savedUser, new: true }))
-				.catch(reject)
-		})
-	)
+      new ModelUser(user)
+        .save()
+        .then(savedUser => resolve({ user: savedUser, new: true }))
+        .catch(reject)
+    })
+  )
 }
 
 function getLocaleFromUser(user) {
-	if (!user || user.interfaceLanguage === 0) {
-		return 'RUSSIAN'
-	}
+  if (!user || user.interfaceLanguage === 0) {
+    return 'RUSSIAN'
+  }
 
-	return 'ENGLISH'
+  return 'ENGLISH'
 }
 
 async function getLocale(msg) {
-	const user = await findUser({ id: msg.from.id })
+  const user = await findUser({ id: msg.from.id })
 
-	if (!user || user.interfaceLanguage === 0) {
-		return 'RUSSIAN'
-	}
+  if (!user || user.interfaceLanguage === 0) {
+    return 'RUSSIAN'
+  }
 
-	return 'ENGLISH'
+  return 'ENGLISH'
 }
 
-async function createOrderDraft(msg, { flush }) {
-	const user = await ModelUser.findOne({ id: msg.from.id })
+function getUserUncompletedOrderDraft(user) {
+  const { orders } = user
 
-	if (user && user.orderDraft) {
-		if (flush) {
-			await DataOrder.flushOrder(user.orderDraft)
-		}
+  if (orders) {
+    return R.find(R.propEq('state', 0))(orders) || null
+  }
 
-		return await findUserById(user._id)
-	} else {
-		const newOrder = new ModelOrder({})
+  return null
+}
 
-		user.orderDraft = newOrder._id
-		await DataOrder.addOrder(newOrder)
+async function createOrderDraft(message, { flush }) {
+  let user = await findUserByMessage(message)
+  let currentDraft = getUserUncompletedOrderDraft(user)
 
-		const newUser = await user.save()
+  if (currentDraft) {
+    if (flush) {
+      currentDraft = await DataOrder.flushOrder(currentDraft._id)
+    }
+  } else {
+    currentDraft = new ModelOrder({})
 
-		return await findUserById(newUser._id)
-	}
+    user.orders.push(currentDraft._id)
+
+    await DataOrder.addOrder(currentDraft)
+
+    user = await user.save()
+  }
+
+  return { user, order: currentDraft }
 }
 
 async function finishOrderDraft(msg) {
-	const user = await ModelUser.findOne({ id: msg.from.id })
+  const user = await ModelUser.findOne({ id: msg.from.id })
 
-	if (user && user.orderDraft) {
-		user.orders.push(user.orderDraft)
-		user.orderDraft = null
+  if (user && user.orderDraft) {
+    user.orders.push(user.orderDraft)
+    user.orderDraft = null
 
-		return await user.save()
-	}
+    return await user.save()
+  }
 }
 
 module.exports = {
-	getAllUsers,
-	findUser,
-	findUserById,
-	findUserByMessage,
-	addUser,
-	getLocaleFromUser,
-	getLocale,
-	createOrderDraft,
-	finishOrderDraft,
+  getAllUsers,
+  findUser,
+  findUserById,
+  findUserByMessage,
+  addUser,
+  getLocaleFromUser,
+  getLocale,
+  createOrderDraft,
+  finishOrderDraft,
 }

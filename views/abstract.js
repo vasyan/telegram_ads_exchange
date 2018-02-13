@@ -37,7 +37,7 @@ class AbstractView {
   }
 
   isEditableMessage(message) {
-    return message.from.is_bot
+    return R.path(['message', 'from', 'is_bot'], message)
   }
 
   constructor() {
@@ -111,7 +111,6 @@ class AbstractView {
     try {
       handler.apply(this, args)
     } catch (err) {
-      console.error('New error')
       throw new Error('Error on handler', err)
     }
   }

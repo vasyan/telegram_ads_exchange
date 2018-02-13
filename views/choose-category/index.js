@@ -56,12 +56,26 @@ class ChooseCategoryView extends AbstractView {
     }
   }
 
+  getSelectedIcon(value) {
+    let selected = []
+
+    if (this.order) {
+      selected = this.order.categories
+    }
+
+    if (selected.indexOf(value) > -1) {
+      return ' ✅'
+    }
+
+    return ''
+  }
+
   updatePaginator(payload) {
     if (!this.paginator) {
       this.initPaginator(payload)
     }
 
-    this.paginator._render()
+    this.paginator._render({ message: payload.message })
   }
 
   initPaginator({ message, list }) {
@@ -82,28 +96,18 @@ class ChooseCategoryView extends AbstractView {
   }
 
   async handleShow(payload) {
-    this.user = await User.createOrderDraft(payload, { flush: true })
-    this._render(payload)
-  }
+    const { user, order } = await User.createOrderDraft(payload, {
+      flush: true,
+    })
 
-  handleNextPage(payload) {
-    this.offset = this.offset + ITEMS_PER_PAGE
-    this._render(payload)
-  }
-
-  handlePrevPage(payload) {
-    this.offset = this.offset - ITEMS_PER_PAGE
-
-    if (this.offset < 0) {
-      this.offset = 0
-    }
+    this.user = user
+    this.order = order
 
     this._render(payload)
   }
 
   async handleSelect({ message, id }) {
-    const user = await User.findUser({ id: message.from.id })
-    const order = await Order.findOrder({ _id: user.orderDraft })
+    const { order } = this
 
     if (order.categories.indexOf(id) === -1) {
       order.categories.push(id)
@@ -118,7 +122,9 @@ class ChooseCategoryView extends AbstractView {
 
   async _render(message) {
     this.user = await User.createOrderDraft(message, {})
+
     await this.updateLocale(message)
+
     const list = await Category.getAllCategories()
 
     this.updatePaginator({

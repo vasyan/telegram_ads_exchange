@@ -1,9 +1,9 @@
 const R = require('ramda')
-const Order = require('../models/order')
+const { Model } = require('../models/order')
 
 function getAllOrders(query = {}) {
   return new Promise(resolve => {
-    Order.find(query).exec((err, orders) => {
+    Model.find(query).exec((err, orders) => {
       if (err) {
         throw err
       }
@@ -15,7 +15,7 @@ function getAllOrders(query = {}) {
 
 function findOrder(query) {
   return new Promise(resolve => {
-    Order.findOne(query).exec((err, order) => {
+    Model.findOne(query).exec((err, order) => {
       if (err) {
         throw err
       }
@@ -27,7 +27,7 @@ function findOrder(query) {
 
 function findOrderById(id) {
   return new Promise(resolve => {
-    Order.findById.exec((err, order) => {
+    Model.findById(id).exec((err, order) => {
       if (err) {
         throw err
       }
@@ -46,7 +46,7 @@ function addOrder(order) {
         return
       }
 
-      new Order(order)
+      new Model(order)
         .save()
         .then(savedOrder => resolve({ order: savedOrder, new: true }))
         .catch(reject)
@@ -56,14 +56,24 @@ function addOrder(order) {
 
 function flushOrder(id) {
   return new Promise(resolve => {
-    const defaultOrder = new Order().toJSON()
-    Order.findByIdAndUpdate(id, R.omit(['_id'], defaultOrder), resolve)
+    const defaultOrder = new Model().toJSON()
+
+    Model.findByIdAndUpdate(
+      id,
+      R.omit(['_id'], defaultOrder),
+      { new: true },
+      (err, order) => {
+        resolve(order)
+      }
+    )
+  }).catch(err => {
+    throw new Error(`Can't flush order ${id}`, err)
   })
 }
 
 function setAudience(id, range = [0, Infinity]) {
   return new Promise(resolve => {
-    Order.findByIdAndUpdate(
+    Model.findByIdAndUpdate(
       id,
       {
         audienceLow: range[0],
@@ -76,7 +86,7 @@ function setAudience(id, range = [0, Infinity]) {
 
 function setPrice(id, range = [0, Infinity]) {
   return new Promise(resolve => {
-    Order.findByIdAndUpdate(
+    Model.findByIdAndUpdate(
       id,
       {
         priceLow: range[0],
@@ -86,6 +96,25 @@ function setPrice(id, range = [0, Infinity]) {
     )
   })
 }
+
+// Schema.pre('save', function(next) {
+//   const document = this
+
+//   console.log('post save')
+
+//   ModelCounter.findByIdAndUpdate(
+//     { _id: 'order' },
+//     { $inc: { seq: 1 } },
+//     function(error, counter) {
+//       if (error) {
+//         return next(error)
+//       }
+
+//       document.id = counter.seq
+//       next()
+//     }
+//   )
+// })
 
 module.exports = {
   addOrder,
