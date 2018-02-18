@@ -135,21 +135,7 @@ class AbstractView {
   }
 
   editRendered(message, payload) {
-    const additionParams = Object.assign(
-      {
-        message_id: message.message_id || message.message.message_id,
-        chat_id: message.from.id,
-      },
-      payload.params || {}
-    )
-
-    if (payload.markup) {
-      bot.editMessageReplyMarkup(payload.markup, additionParams)
-    }
-
-    if (payload.text) {
-      bot.editMessageText(payload.text, additionParams)
-    }
+    bot.editMessageText(message, payload)
   }
 
   handleRenderError(err) {
