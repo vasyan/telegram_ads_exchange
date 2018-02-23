@@ -10,14 +10,14 @@ const i18 = {
     keyboard: {
       any: 'Любая',
     },
-    body: 'Введите желаему цену рекламы ⚠️ *от-до* ⚠️',
+    body: 'Введите желаему цену рекламы ⚠️ *от-до* RUB⚠️',
     invalid: 'Введенные данные не коректы',
   },
   ENGLISH: {
     keyboard: {
       any: 'Any',
     },
-    body: 'Choose range of price with format ⚠️ *from-to* ⚠️',
+    body: 'Choose range of price with format ⚠️ *from-to* RUB⚠️',
     invalid: 'Input is invalid',
   },
 }

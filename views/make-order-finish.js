@@ -36,7 +36,11 @@ class MakeRequestFinishView extends AbstractView {
   async _render(message) {
     await this.updateLocale(message)
 
-    await User.finishOrderDraft(message)
+    try {
+      await User.finishOrderDraft(message)
+    } catch (error) {
+      console.log('Catch on finished ', error)
+    }
 
     this.render(message.from.id, this.getSubstrings('body'), {
       reply_markup: {

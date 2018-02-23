@@ -46,6 +46,8 @@ class ChooseAuditoryView extends AbstractView {
   }
 
   handleInput(payload, match) {
+    console.log('handle input', match)
+
     if (match[1] > match[2]) {
       this.handleInvalidInput(payload)
 

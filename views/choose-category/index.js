@@ -99,6 +99,7 @@ class ChooseCategoryView extends AbstractView {
       flush: true,
     })
 
+    this.paginator = null
     this.user = user
     this.order = order
 
@@ -120,7 +121,13 @@ class ChooseCategoryView extends AbstractView {
   }
 
   async _render(message) {
-    const { user } = await User.getOrderDraft(message, {})
+    let user
+    if (this.user) {
+      user = this.user
+    } else {
+      const data = await User.getOrderDraft(message, {})
+      user = data.user
+    }
 
     this.user = user
 

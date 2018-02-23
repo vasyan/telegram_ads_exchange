@@ -147,8 +147,14 @@ class Paginator extends AbstractUiView {
     this.prev()
   }
 
-  async _render(params) {
-    this.message = this.message || (params && params.message)
+  async _render(params = {}) {
+    this.message = params.message || this.message
+
+    if (!this.message) {
+      console.error(`Can't render paginator`)
+
+      return
+    }
 
     const markup = {
       inline_keyboard: [
@@ -159,6 +165,8 @@ class Paginator extends AbstractUiView {
     }
 
     if (!this.isEditableMessage(this.message)) {
+      console.log('is not editable message')
+
       this.render(this.message.from.id, this.body, {
         reply_markup: markup,
       })

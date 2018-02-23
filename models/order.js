@@ -9,6 +9,10 @@ const orderSchema = new Schema(
       // default: strings().orderStates.searchingForFreelancer,
       default: 0,
     },
+    number: {
+      type: Number,
+      default: 0,
+    },
     currentInlineMessage_id: String,
     currentInlineChatId: String,
     advertiserChatInlines: [
@@ -24,10 +28,22 @@ const orderSchema = new Schema(
       ref: 'language',
     },
     description: String,
-    priceHigh: String,
-    priceLow: String,
-    audienceHigh: Number,
-    audienceLow: Number,
+    priceHigh: {
+      type: Number,
+      default: 0,
+    },
+    priceLow: {
+      type: Number,
+      default: 0,
+    },
+    audienceHigh: {
+      type: Number,
+      default: 0,
+    },
+    audienceLow: {
+      type: Number,
+      default: 0,
+    },
     reviewByClient: {
       type: Schema.ObjectId,
       ref: 'review',
