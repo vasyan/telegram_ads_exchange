@@ -1,6 +1,7 @@
 const R = require('ramda')
 const { Model: ModelUser } = require('../models/user')
 const { Model: ModelOrder } = require('../models/order')
+const { Model: ModelCounter } = require('../models/counter')
 const DataOrder = require('./order')
 
 const commonPopulate = [
@@ -141,15 +142,30 @@ async function getOrderDraft(message, params = {}) {
 }
 
 async function finishOrderDraft(message) {
-  return new Promise(async (resolve, reject) => {
-    const { user, order } = await getOrderDraft(message)
+  const { user, order } = await getOrderDraft(message)
 
-    if (user && order) {
-      order.update({ state: 1 }, resolve)
-    } else {
-      reject(`Can't change order status`)
-    }
-  })
+  if (user && order) {
+    ModelCounter.findByIdAndUpdate(
+      { _id: 'order' },
+      { $inc: { seq: 1 } },
+      { new: true },
+      (err, counter) => {
+        if (err) {
+          throw err
+        }
+
+        ModelOrder.findByIdAndUpdate(
+          { _id: order._id },
+          {
+            state: 1,
+            number: counter.seq,
+          }
+        )
+      }
+    )
+  } else {
+    throw new Error(`Can't mark order as finished`)
+  }
 }
 
 module.exports = {
