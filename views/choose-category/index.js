@@ -115,7 +115,11 @@ class ChooseCategoryView extends AbstractView {
       order.categories.remove(id)
     }
 
-    await order.save()
+    try {
+      await order.save()
+    } catch (error) {
+      console.log('Error on set category', error)
+    }
 
     this._render(message)
   }

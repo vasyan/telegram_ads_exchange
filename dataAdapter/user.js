@@ -141,31 +141,41 @@ async function getOrderDraft(message, params = {}) {
   return { user, order: currentDraft }
 }
 
-async function finishOrderDraft(message) {
-  const { user, order } = await getOrderDraft(message)
+function finishOrderDraft(message) {
+  return new Promise(async resolve => {
+    const { user, order } = await getOrderDraft(message)
 
-  if (user && order) {
-    ModelCounter.findByIdAndUpdate(
-      { _id: 'order' },
-      { $inc: { seq: 1 } },
-      { new: true },
-      (err, counter) => {
-        if (err) {
-          throw err
-        }
-
-        ModelOrder.findByIdAndUpdate(
-          { _id: order._id },
-          {
-            state: 1,
-            number: counter.seq,
+    if (user && order) {
+      return ModelCounter.findByIdAndUpdate(
+        { _id: 'order' },
+        { $inc: { seq: 1 } },
+        { new: true, upsert: true },
+        (err, counter) => {
+          if (err) {
+            throw err
           }
-        )
-      }
-    )
-  } else {
-    throw new Error(`Can't mark order as finished`)
-  }
+
+          return ModelOrder.findByIdAndUpdate(
+            { _id: order._id },
+            {
+              state: 1,
+              number: counter.seq,
+            },
+            { new: true },
+            (err, order) => {
+              if (err) {
+                throw new Error(`Can't update order state`)
+              }
+
+              resolve(order)
+            }
+          )
+        }
+      )
+    } else {
+      throw new Error(`Can't mark order as finished`)
+    }
+  })
 }
 
 module.exports = {
