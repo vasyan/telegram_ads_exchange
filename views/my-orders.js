@@ -96,17 +96,17 @@ class MyOrdersView extends AbstractView {
   }
 
   async _render(message) {
-    const user = await User.findUserByMessage(message)
+    const orders = await User.getActiveOrders(message)
     await this.updateLocale(message)
 
-    if (user.orders.length === 0) {
+    if (!orders) {
       this.render(message.from.id, this.getSubstrings('noOrders'))
       return
     }
 
     this.updatePaginator({
       message,
-      list: user.orders,
+      list: orders,
     })
   }
 }
