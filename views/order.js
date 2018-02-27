@@ -62,8 +62,8 @@ class OrderView extends AbstractView {
           ],
         ],
       },
-      text: `
-        ${this.getSubstrings('body')}: ${order._id}
+      text: `✅
+        ${this.getSubstrings('body')}: ${order.number}
         ${this.getSubstrings('price')}: ${order.priceLow}-${order.priceHigh}
         ${this.getSubstrings('audience')}: ${order.audienceLow}-${
         order.audienceHigh

@@ -1,9 +1,17 @@
-require('./greeting')
-require('./choose-audience')
-require('./choose-category')
-require('./choose-price')
-require('./my-orders')
-require('./order')
-require('./testing')
+const Greeting = require('./greeting')
+const ChooseCategory = require('./choose-category')
+const ChooseAudience = require('./choose-audience')
+const ChoosePrice = require('./choose-price')
+const MyOrders = require('./my-orders')
+const Order = require('./order')
+const Testing = require('./testing')
 
-module.exports = {}
+module.exports = {
+  ViewGreeting: Greeting,
+  ViewOrder: Order,
+  ViewMyOrders: MyOrders,
+  ViewChoosePrice: ChoosePrice,
+  ViewChooseAudience: ChooseAudience,
+  ViewChooseCategory: ChooseCategory,
+  ViewTesting: Testing,
+}

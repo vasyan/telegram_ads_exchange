@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha --watch"
   },
   "author": "",
   "license": "ISC",
@@ -19,6 +19,7 @@
     "ramda": "^0.25.0"
   },
   "devDependencies": {
+    "cat-names": "^1.0.2",
     "chai": "^4.1.2",
     "eslint": "^4.16.0",
     "eslint-plugin-async-await": "^0.0.0",
