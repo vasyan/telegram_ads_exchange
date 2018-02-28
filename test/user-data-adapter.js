@@ -142,11 +142,11 @@ describe('User data adapter', function() {
 
   it(`it should mark order as active on create finish`, done => {
     getUserWithOrders().then(async ({ user }) => {
+      const orderCounter = (await ModelCounter.findById('order')).seq + 1
       const newOrder = await User.finishOrderDraft({ from: { id: user.id } })
-      const orderCounter = await ModelCounter.findById('order')
 
       assert.equal(newOrder.state, 1, 'new status is active')
-      assert.equal(newOrder.number, orderCounter.seq - 1, 'has fresh counter')
+      assert.equal(newOrder.number, orderCounter, 'has fresh counter')
 
       done()
     })
