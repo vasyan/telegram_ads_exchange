@@ -146,13 +146,13 @@ function finishOrderDraft(message) {
     const { user, order } = await getOrderDraft(message)
 
     if (user && order) {
-      return ModelCounter.findByIdAndUpdate(
+      ModelCounter.findByIdAndUpdate(
         { _id: 'order' },
         { $inc: { seq: 1 } },
         { new: true, upsert: true },
         (err, counter) => {
           if (err) {
-            throw err
+            throw new Error(`Can't update order counter`)
           }
 
           return ModelOrder.findByIdAndUpdate(
