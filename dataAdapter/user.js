@@ -178,6 +178,16 @@ function finishOrderDraft(message) {
   })
 }
 
+async function getActiveOrders(message) {
+  const user = await findUserByMessage(message)
+
+  if (user.orders.lenght === 0) {
+    return null
+  }
+
+  return user.orders.filter(order => order.state === 1)
+}
+
 module.exports = {
   getAllUsers,
   findUser,
@@ -187,5 +197,6 @@ module.exports = {
   getLocaleFromUser,
   getLocale,
   getOrderDraft,
+  getActiveOrders,
   finishOrderDraft,
 }

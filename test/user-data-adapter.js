@@ -27,6 +27,48 @@ function generateUsers(count) {
   )
 }
 
+function getUserWithOrders(payload = {}) {
+  const { count = 1, params = {} } = payload
+  return new Promise(resolve => {
+    const user = new ModelUser(getUser())
+
+    const orders = []
+
+    R.times(value => {
+      let orderData = {}
+
+      if (params[value]) {
+        orderData = params[value]
+      }
+
+      orders.push(new ModelOrder(orderData))
+    }, count)
+
+    user.orders = orders
+
+    user.save(err => {
+      if (err) {
+        throw err
+      }
+
+      const promisesOrdersSave = R.map(order => {
+        return new Promise(resolve =>
+          order.save(err => {
+            if (err) {
+              console.log('error on save order', err)
+            }
+            resolve()
+          })
+        )
+      }, orders)
+
+      Promise.all(promisesOrdersSave).then(() => {
+        resolve({ user, orders })
+      })
+    })
+  })
+}
+
 describe('User data adapter', function() {
   beforeEach(done => {
     //Before each test we empty the database
@@ -99,29 +141,27 @@ describe('User data adapter', function() {
   })
 
   it(`it should mark order as active on create finish`, done => {
-    const order = new ModelOrder({})
-    const user = new ModelUser(getUser())
+    getUserWithOrders().then(async ({ user }) => {
+      const newOrder = await User.finishOrderDraft({ from: { id: user.id } })
+      const orderCounter = await ModelCounter.findById('order')
 
-    user.orders.push(order._id)
+      assert.equal(newOrder.state, 1, 'new status is active')
+      assert.equal(newOrder.number, orderCounter.seq - 1, 'has fresh counter')
 
-    user.save(err => {
-      if (err) {
-        throw err
-      }
+      done()
+    })
+  })
 
-      order.save(async err => {
-        if (err) {
-          throw err
-        }
+  it(`it should return active orders`, done => {
+    getUserWithOrders({
+      count: 5,
+      params: { 1: { state: 1 }, 2: { state: 1 } },
+    }).then(async ({ user }) => {
+      const activeOrders = await User.getActiveOrders({ from: { id: user.id } })
 
-        const newOrder = await User.finishOrderDraft({ from: { id: user.id } })
-        const orderCounter = await ModelCounter.findById('order')
+      assert.equal(activeOrders.length, 2, 'is has two active orders')
 
-        assert.equal(newOrder.state, 1, 'new status is active')
-        assert.equal(newOrder.number, orderCounter.seq - 1, 'has fresh counter')
-
-        done()
-      })
+      done()
     })
   })
 })
