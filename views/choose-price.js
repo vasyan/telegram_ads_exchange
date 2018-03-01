@@ -1,5 +1,5 @@
-const User = require('../dataAdapter/user')
-const Order = require('../dataAdapter/order')
+const User = require('../data-adapter/user')
+const Order = require('../data-adapter/order')
 const MakeRequestFinish = require('./make-order-finish')
 const AbstractView = require('./abstract')
 

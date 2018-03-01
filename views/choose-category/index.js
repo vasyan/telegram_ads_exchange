@@ -1,5 +1,5 @@
-const Category = require('../../dataAdapter/category')
-const User = require('../../dataAdapter/user')
+const Category = require('../../data-adapter/category')
+const User = require('../../data-adapter/user')
 const i18 = require('./i18')
 const ViewGreeting = require('../greeting')
 const ViewChooseAudience = require('../choose-audience')

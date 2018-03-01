@@ -1,4 +1,4 @@
-const User = require('../dataAdapter/user')
+const User = require('../data-adapter/user')
 const mainMenu = require('../menus/main')
 const OrderView = require('./order')
 const AbstractView = require('./abstract')

@@ -1,4 +1,4 @@
-const Order = require('../dataAdapter/order')
+const Order = require('../data-adapter/order')
 const AbstractView = require('./abstract')
 
 const RUSSIAN = {

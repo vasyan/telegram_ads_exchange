@@ -1,6 +1,6 @@
 const R = require('ramda')
 const bot = require('../engine')
-const User = require('../dataAdapter/user')
+const User = require('../data-adapter/user')
 
 const MENU_NAME = '@main_menu'
 const SHOW = MENU_NAME + ''
@@ -60,7 +60,7 @@ bot.on('message', msg => {
     R.forEachObjIndexed(iterator, ENGLISH)
 
     if (command === 'changeLocale') {
-      User.findUser({id: msg.from.id}).then(user => {
+      User.findUser({ id: msg.from.id }).then(user => {
         user.interfaceLanguage = Number(!user.interfaceLanguage)
 
         user.save().then(() => render(msg))

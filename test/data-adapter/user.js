@@ -10,7 +10,7 @@ const assert = chai.assert
 const { Model: ModelUser } = require('../models/user')
 const { Model: ModelOrder } = require('../models/order')
 const { Model: ModelCounter } = require('../models/counter')
-const User = require('../dataAdapter/user')
+const User = require('../data-adapter/user')
 
 function getUser() {
   return {

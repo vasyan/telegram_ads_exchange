@@ -1,6 +1,6 @@
 const ViewChoosePrice = require('./choose-price')
-const User = require('../dataAdapter/user')
-const Order = require('../dataAdapter/order')
+const User = require('../data-adapter/user')
+const Order = require('../data-adapter/order')
 const AbstractView = require('./abstract')
 
 const PATTERN_INPUT = /(\d+)\s?-\s?(\d+)$/

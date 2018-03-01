@@ -1,6 +1,6 @@
 const R = require('ramda')
 const bot = require('../engine')
-const User = require('../dataAdapter/user')
+const User = require('../data-adapter/user')
 
 const PATTERN_ARGS = /@.+/
 

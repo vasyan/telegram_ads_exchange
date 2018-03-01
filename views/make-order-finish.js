@@ -1,5 +1,5 @@
 const AbstractView = require('./abstract')
-const User = require('../dataAdapter/user')
+const User = require('../data-adapter/user')
 
 const i18 = {
   RUSSIAN: {
