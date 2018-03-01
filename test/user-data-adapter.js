@@ -164,4 +164,19 @@ describe('User data adapter', function() {
       done()
     })
   })
+
+  it(`it should return new or existed order draft`, done => {
+    generateUsers(2).then(async users => {
+      const { user: newUser, order: newOrder } = await User.getOrderDraft({
+        from: { id: users[1].id },
+      })
+
+      const newOrders = newUser.orders.map(R.prop('_id'))
+
+      assert.include(newOrders, newOrder._id, 'user has draft order')
+      assert.equal(newOrder.state, 0, 'draft order has state 0')
+
+      done()
+    })
+  })
 })
