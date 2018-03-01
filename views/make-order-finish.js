@@ -1,10 +1,11 @@
 const AbstractView = require('./abstract')
 const User = require('../data-adapter/user')
+const ViewMyOrders = require('./my-orders')
 
 const i18 = {
   RUSSIAN: {
     body: 'Заявка на размещение рекламы успешно создана.',
-    showMyOrders: 'Мои заявки',
+    showMyOrders: 'Мои заказы',
   },
   ENGLISH: {
     body: '👌 Well done. Your order has been approoved.',
@@ -16,7 +17,6 @@ class MakeRequestFinishView extends AbstractView {
   get actions() {
     return {
       RENDER: this.wrapActionName('render'),
-      SHOW_MY_ORDERS: this.wrapActionName('show-my-orders'),
     }
   }
 
@@ -48,7 +48,7 @@ class MakeRequestFinishView extends AbstractView {
           [
             {
               text: this.getSubstrings('showMyOrders'),
-              callback_data: this.actions.SHOW_MY_ORDERS,
+              callback_data: ViewMyOrders.instance.actions.RENDER,
             },
           ],
         ],
