@@ -1,16 +1,16 @@
 process.env.NODE_ENV = 'test'
 process.env.TEST_MONGODB = 'mongodb://localhost/ad-bot-testing'
 
-const { mongoose } = require('../db')
+const { mongoose } = require('../../db')
 const catNames = require('cat-names')
 const R = require('ramda')
 
 const chai = require('chai')
 const assert = chai.assert
-const { Model: ModelUser } = require('../models/user')
-const { Model: ModelOrder } = require('../models/order')
-const { Model: ModelCounter } = require('../models/counter')
-const User = require('../data-adapter/user')
+const { Model: ModelUser } = require('../../models/user')
+const { Model: ModelOrder } = require('../../models/order')
+const { Model: ModelCounter } = require('../../models/counter')
+const User = require('../../data-adapter/user')
 
 function getUser() {
   return {
