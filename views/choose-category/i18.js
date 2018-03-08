@@ -13,7 +13,7 @@ const RUSSIAN = {
     adult: '18+',
   },
 
-  body: 'Выберите подходящие категории',
+  body: 'Выберите категории',
 
   next: 'Далее',
 }
@@ -32,12 +32,12 @@ const ENGLISH = {
     adult: '18+',
   },
 
-  body: 'Choose interested categories',
+  body: 'Choose categories',
 
   next: 'Next',
 }
 
 module.exports = {
   ENGLISH,
-  RUSSIAN
+  RUSSIAN,
 }
