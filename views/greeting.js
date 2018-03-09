@@ -9,8 +9,8 @@ const RUSSIAN = {
   greetingBrif:
     'Этот бот поможет вам найти подходящую площадку для вашей рекламы, либо рекламу для вашей площадки. Тиндер для рекламы.',
   inlineMenu: {
-    buy: 'Купить',
-    sell: 'Продать',
+    buy: 'Купить рекламу',
+    sell: 'Добавить канал',
   },
 }
 const ENGLISH = {
@@ -18,8 +18,8 @@ const ENGLISH = {
   greetingBrif:
     'This bot will help you find a suitable platform for your advertising, or advertising for your site. Tinder for advertising.',
   inlineMenu: {
-    buy: 'Buy',
-    sell: 'Sell',
+    buy: 'Buy ad',
+    sell: 'Add channel',
   },
 }
 const i18 = {

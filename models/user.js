@@ -1,5 +1,4 @@
 const mongoose = require('mongoose')
-
 const Schema = mongoose.Schema
 const userSchema = new Schema(
   {
@@ -52,6 +51,10 @@ const userSchema = new Schema(
       type: Schema.ObjectId,
       ref: 'order',
       // requred: true,
+    },
+    currentView: {
+      type: String,
+      default: 'greeting-view',
     },
     specialSymbol: String,
   },
