@@ -100,14 +100,32 @@ function getLocaleFromUser(user) {
   return 'ENGLISH'
 }
 
-async function getLocale(msg) {
-  const user = await findUser({ id: msg.from.id })
+const isInvalidMessage = R.compose(R.isNil, R.path(['from', 'id']))
+const validateMessage = R.when(isInvalidMessage, handleInvalidMessage)
 
-  if (!user || user.interfaceLanguage === 0) {
+function handleInvalidMessage() {
+  throw new Error('😂 Message is invalid 😂')
+}
+
+function getLocaleByUser(user) {
+  if (user && user.interfaceLanguage === 0) {
     return 'RUSSIAN'
   }
 
   return 'ENGLISH'
+}
+
+async function getLocale(message) {
+  validateMessage(message)
+
+  // Подумой
+  // return R.composeP(
+  //   R.curry(user => Promise.resolve(getLocaleByUser(user))),
+  //   findUser
+  // )
+  const user = await findUser({ id: message.from.id })
+
+  return getLocaleByUser(user)
 }
 
 function getUserUncompletedOrderDraft(user) {
@@ -196,6 +214,7 @@ module.exports = {
   addUser,
   getLocaleFromUser,
   getLocale,
+  getLocaleByUser,
   getOrderDraft,
   getActiveOrders,
   finishOrderDraft,

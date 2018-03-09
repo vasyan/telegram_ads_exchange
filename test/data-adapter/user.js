@@ -88,6 +88,16 @@ describe('User data adapter', function() {
     done()
   })
 
+  it('it should detect user interface language', () => {
+    assert.equal('ENGLISH', User.getLocaleByUser({}), 'english for default')
+    assert.equal('ENGLISH', User.getLocaleByUser(), 'english for empty call')
+    assert.equal(
+      'RUSSIAN',
+      User.getLocaleByUser({ interfaceLanguage: 0 }),
+      'russian for interfaceLanguage sets to 0'
+    )
+  })
+
   it('it should get all the users', done => {
     generateUsers(10).then(() => {
       User.getAllUsers().then(users => {

@@ -26,6 +26,6 @@
     "eslint-plugin-node": "^5.2.1",
     "pino": "^4.11.0",
     "prettier": "1.10.2",
-    "sinon": "^4.3.0"
+    "sinon": "^4.4.2"
   }
 }
