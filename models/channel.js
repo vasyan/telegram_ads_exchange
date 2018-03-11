@@ -3,17 +3,22 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 const channelSchema = new Schema(
   {
+    ownerId: Schema.ObjectId,
+    state: {
+      type: Number,
+      default: 0,
+    },
     name: String,
     link: String,
     description: String,
     price: {
       type: Number,
-      required: true,
+      // required: true,
       default: 0,
     },
     currency: {
       type: Schema.ObjectId,
-      required: true,
+      // required: true,
     },
     number: {
       type: Number,
@@ -31,7 +36,7 @@ const channelSchema = new Schema(
       {
         type: Schema.ObjectId,
         ref: 'category',
-        required: true,
+        // required: true,
         default: [],
       },
     ],

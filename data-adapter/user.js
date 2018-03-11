@@ -67,7 +67,7 @@ function findUser(query) {
   })
 }
 
-function findUserByMessage(message) {
+function findByMessage(message) {
   return findUser({ id: message.from.id })
 }
 
@@ -139,7 +139,7 @@ function getUserUncompletedOrderDraft(user) {
 }
 
 async function getOrderDraft(message, params = {}) {
-  let user = await findUserByMessage(message)
+  let user = await findByMessage(message)
   let currentDraft = getUserUncompletedOrderDraft(user)
 
   if (currentDraft) {
@@ -197,7 +197,7 @@ function finishOrderDraft(message) {
 }
 
 async function getActiveOrders(message) {
-  const user = await findUserByMessage(message)
+  const user = await findByMessage(message)
 
   if (user.orders.lenght === 0) {
     return null
@@ -210,7 +210,7 @@ module.exports = {
   getAllUsers,
   findUser,
   findUserById,
-  findUserByMessage,
+  findByMessage,
   addUser,
   getLocaleFromUser,
   getLocale,

@@ -25,11 +25,11 @@ class AbstractView {
       throw new Error('😅 You must define i18 dictionary 😅')
     }
 
-    if (!this.locale) {
-      throw new Error('Locale is not defined')
-    }
+    // if (!this.locale) {
+    //   throw new Error('Locale is not defined')
+    // }
 
-    return R.path(path.split('.'), this.i18[this.locale])
+    return R.path(path.split('.'), this.i18[this.locale || 'RUSSIAN'])
   }
 
   wrapActionName(name) {
@@ -115,7 +115,7 @@ class AbstractView {
     }
   }
 
-  mergeOptionsWithdefault(options) {
+  mergeOptionsWithDefault(options) {
     return Object.assign(
       {
         parse_mode: 'Markdown',
@@ -126,7 +126,7 @@ class AbstractView {
 
   render(id, message, options = {}) {
     return bot
-      .sendMessage(id, message, this.mergeOptionsWithdefault(options))
+      .sendMessage(id, message, this.mergeOptionsWithDefault(options))
       .catch(this.handleRenderError)
   }
 
@@ -135,6 +135,8 @@ class AbstractView {
   }
 
   editRendered(message, payload) {
+    console.log('editRendered', payload)
+
     bot.editMessageText(message, payload)
   }
 

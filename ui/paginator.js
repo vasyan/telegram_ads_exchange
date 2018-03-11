@@ -1,3 +1,4 @@
+const R = require('ramda')
 const AbstractUiView = require('./abstract')
 
 class Paginator extends AbstractUiView {
@@ -43,7 +44,7 @@ class Paginator extends AbstractUiView {
     this.list = list
     this.itemView = itemView
     this.onSelect = onSelect
-    this.keyboard = keyboard || []
+    this.keyboard = keyboard
     this.itemsPerPage = itemsPerPage
     this.offset = 0
     this.columns = columns || 2
